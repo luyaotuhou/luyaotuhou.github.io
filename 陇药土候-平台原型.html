@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>陇药土候 v0.2 · 黄河甘肃段土壤微生物—中药材时序适配平台</title>
+<style>
+  :root{
+    --ink:#22281f; --muted:#6b7568; --faint:#98a094;
+    --green:#2F6B4F; --green2:#6E9E80; --green3:#E7F0E9;
+    --sand:#C8A165; --sand2:#F3EADA;
+    --clay:#B0472F; --clay2:#F7E3DA;
+    --blue:#3D6E8F; --blue2:#E6EFF4;
+    --bg:#FAF9F5; --card:#fff; --line:#E3E5DC;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB",system-ui,sans-serif;
+    background:var(--bg); color:var(--ink); font-size:14px; line-height:1.65; -webkit-font-smoothing:antialiased}
+  .topbar{background:var(--card); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:50}
+  .topbar-in{max-width:1300px; margin:0 auto; padding:14px 26px 0; display:flex; align-items:center; gap:16px}
+  .logo{width:40px;height:40px;flex:0 0 40px}
+  .brand h1{font-size:19px; letter-spacing:.14em; font-weight:700}
+  .brand p{font-size:11.5px; color:var(--muted)}
+  .topright{margin-left:auto; display:flex; align-items:center; gap:8px}
+  .pill{font-size:11.5px; padding:4px 11px; border-radius:99px; background:var(--sand2); color:#8a6535; border:1px solid #E8D9BE}
+  .pill.g{background:var(--green3); color:var(--green); border-color:#CFE0D4}
+  .pill.b{background:var(--blue2); color:var(--blue); border-color:#CFE0EA}
+  .who{font-size:11.5px;color:var(--faint)}
+  .tabs{max-width:1300px;margin:0 auto;padding:0 26px;display:flex;gap:2px;margin-top:12px;overflow-x:auto}
+  .tab{padding:9px 14px 11px; font-size:13.5px; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap}
+  .tab:hover{color:var(--green)}
+  .tab.on{color:var(--green); font-weight:700; border-bottom-color:var(--green)}
+  main{max-width:1300px;margin:0 auto;padding:24px 26px 70px}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px 22px; margin-bottom:16px}
+  .card h2{font-size:15px;font-weight:700;margin-bottom:2px}
+  .card .sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .row{display:flex;gap:14px;flex-wrap:wrap}
+  .grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .seg{display:inline-flex;background:#F1F2EC;border-radius:10px;padding:3px;gap:2px}
+  .seg button{border:0;background:transparent;font:inherit;font-size:12.5px;color:var(--muted);padding:6px 13px;border-radius:8px;cursor:pointer}
+  .seg button.on{background:#fff;color:var(--green);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.07)}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:9px;padding:5px 12px;font-size:12.5px;cursor:pointer;color:#3a4438}
+  .chip:hover{border-color:var(--green2);color:var(--green)}
+  .chip.on{background:var(--green);border-color:var(--green);color:#fff;font-weight:700}
+  .chip .rg{font-size:10px;opacity:.6;margin-left:4px}
+  .kpi{background:#FCFCF9;border:1px solid var(--line);border-radius:11px;padding:11px 13px}
+  .kpi .k{font-size:11.5px;color:var(--muted)}
+  .kpi .v{font-size:18px;font-weight:700;margin-top:2px}
+  .kpi .n{font-size:11px;color:var(--faint);margin-top:1px}
+  .cal{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-top:6px}
+  .cell{border-radius:8px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border:2px solid transparent;color:#fff}
+  .cell:hover{transform:translateY(-2px)}
+  .cell.sel{border-color:var(--ink)}
+  .cell b{font-size:15px}.cell span{font-size:9.5px;opacity:.85}
+  .monlabels{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-bottom:5px}
+  .monlabels div{text-align:center;font-size:11px;color:var(--faint)}
+  .bar{height:8px;border-radius:99px;background:#EEF0E9;overflow:hidden;margin-top:6px}
+  .bar i{display:block;height:100%;border-radius:99px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:left;font-weight:700;color:var(--muted);font-size:11.5px;border-bottom:1px solid var(--line);padding:7px 8px}
+  td{padding:7px 8px;border-bottom:1px solid #F2F3EC}
+  tr:last-child td{border-bottom:0}
+  .note{font-size:11.5px;color:var(--faint);line-height:1.7}
+  .tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:6px;background:var(--green3);color:var(--green)}
+  .tag.clay{background:var(--clay2);color:var(--clay)}
+  .tag.sand{background:var(--sand2);color:#8a6535}
+  .tag.blue{background:var(--blue2);color:var(--blue)}
+  h3.sec{font-size:13px;font-weight:700;margin:16px 0 8px;color:#2c352b}
+  .hidden{display:none}
+  .legend{display:flex;gap:16px;align-items:center;font-size:12px;color:var(--muted);margin:2px 0 8px;flex-wrap:wrap}
+  .legend i{display:inline-block;width:16px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+  .mini-t{font-size:11.5px;color:var(--muted);margin-bottom:2px;display:flex;justify-content:space-between}
+  .mini-t b{color:var(--ink)}
+  .foot{max-width:1300px;margin:0 auto;padding:0 26px 40px;color:var(--faint);font-size:11.5px}
+  /* 证据徽标 */
+  .grade{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:4px;
+    font-size:10px;font-weight:700;color:#fff;vertical-align:middle}
+  .gA{background:#2F6B4F}.gB{background:#C8A165}.gC{background:#9AA3A0}
+  /* 矩阵 */
+  .mx{display:grid;gap:3px;margin-top:6px}
+  .mx .hrow{font-size:11.5px;color:var(--ink);text-align:center;font-weight:700;padding-bottom:2px;line-height:1.25}
+  .mx .lrow{font-size:11.5px;color:var(--muted);display:flex;flex-direction:column;justify-content:center;line-height:1.3;padding-right:4px}
+  .mx .lrow b{color:var(--ink);font-size:12px}
+  .mc{height:38px;border-radius:6px;display:flex;align-items:center;justify-content:center;gap:4px;
+    font-size:11px;cursor:pointer;border:2px solid transparent;color:#fff}
+  .mc:hover{border-color:var(--ink)}
+  .mc.sel{border-color:var(--ink)}
+  .mc .g{font-size:9px;opacity:.9}
+  .rank{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #F2F3EC;font-size:12.5px}
+  .rank:last-child{border-bottom:0}
+  .rank .no{width:18px;color:var(--faint);font-size:11px}
+  .rank .nm{flex:1}
+  .rank .vv{font-weight:700}
+  .ref{border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:10px;background:#FCFCF9}
+  .ref .h{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
+  .ref .h b{font-size:12.5px}
+  .ref .meta{font-size:11px;color:var(--faint);margin-bottom:6px}
+  .ref .f{font-size:12px;color:#3a4438;line-height:1.7}
+  .ref .u{font-size:11.5px;color:var(--green);margin-top:5px}
+  .banner{background:linear-gradient(90deg,#F4F8F2,#FBF8EF);border:1px solid #DCE6DA;border-radius:11px;
+    padding:11px 14px;font-size:12px;color:#3d4a3c;margin-bottom:14px;line-height:1.75}
+  .banner b{color:var(--green)}
+  .row > *{min-width:0}
+  .mx-hint{display:none}
+  .hscroll{overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px}
+  @media (max-width:1000px){
+    .grid2,.grid3,.grid6{grid-template-columns:1fr}
+    .grid4{grid-template-columns:1fr 1fr}
+    .topbar-in{flex-wrap:wrap; padding:12px 16px 0}
+    .brand{flex:1; min-width:180px}
+    .brand h1{font-size:17px}
+    .brand p{font-size:10.5px; line-height:1.3}
+    .topright{width:100%; margin-left:0; margin-top:8px; flex-wrap:wrap; gap:6px}
+    .pill{font-size:10.5px; padding:3px 9px}
+    .who{display:none}
+    .tabs{padding:0 10px}
+    .tab{padding:8px 11px 10px; font-size:12.5px}
+    main{padding:14px 12px 60px}
+    .card{padding:15px 13px; border-radius:12px}
+    .card h2{font-size:14px}
+    .banner{font-size:11px; padding:9px 11px; line-height:1.7}
+    .mx{min-width:900px}
+    .mx .hrow{font-size:11px}
+    .mx .lrow b{font-size:11.5px}
+    .mc{height:34px; font-size:10px}
+    .monlabels,.cal{min-width:700px}
+    .mx-hint{display:block;font-size:11px;color:#98a094;margin-top:6px}
+    .cell{height:50px}
+    .kpi .v{font-size:16px}
+    .legend{font-size:11px; gap:10px}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <svg class="logo" viewBox="0 0 48 48" fill="none">
+      <rect x="2" y="2" width="44" height="44" rx="11" fill="#2F6B4F"/>
+      <path d="M8 33c6-1 9-4 12-9s7-7 20-8" stroke="#CFE3D4" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M8 38c7-.5 12-3 16-8" stroke="#8FB79C" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>
+      <circle cx="20" cy="24" r="2.4" fill="#F0C98A"/>
+      <path d="M30 14v6M33 17h-6" stroke="#F0C98A" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+    <div class="brand">
+      <h1>陇药土候</h1>
+      <p>黄河甘肃段土壤微生物—中药材时序适配平台</p>
+    </div>
+
+  </div>
+  <div class="tabs">
+    <div class="tab on" data-tab="time">时序图谱</div>
+    <div class="tab" data-tab="matrix">季节·菌·药</div>
+    <div class="tab" data-tab="overview">全药材总览</div>
+    <div class="tab" data-tab="cal">适配日历</div>
+    <div class="tab" data-tab="win">窗口推荐</div>
+    <div class="tab" data-tab="risk">连作预警</div>
+    <div class="tab" data-tab="refs">证据溯源</div>
+    <div class="tab" data-tab="doc">方法与说明</div>
+  </div>
+</div>
+
+<main>
+  <div class="banner">
+    <b>数据性质声明：</b>本平台曲线与指数（MAI）为<b>模型推算</b>，依据 37 篇已核验文献的方向性证据与产区气候参数生成，<b>非实测值</b>；
+    文献中可查的真实数值以“证据卡”形式标注（含 PMID / DOI）。
+    每个结论标注证据等级：<span class="grade gA">A</span> 该药材直接验证 ·
+    <span class="grade gB">B</span> 近缘作物或机制证据 ·
+    <span class="grade gC">C</span> 模型推算。
+  </div>
+
+  <!-- ============ 时序图谱 ============ -->
+  <section id="tab-time">
+    <div class="card">
+      <div class="row" style="align-items:flex-start">
+        <div style="flex:1">
+          <h2>土壤微生物的年内节律</h2>
+          <div class="sub">选择产区，查看益菌供给与病原胁迫如何在 12 个月中此消彼长（曲线为模型推算）</div>
+        </div>
+        <div class="seg" id="regionSeg"></div>
+      </div>
+      <div class="legend">
+        <span><i style="background:#2F6B4F"></i>益菌供给指数</span>
+        <span><i style="background:#B0472F"></i>病原胁迫指数</span>
+        <span><i style="background:#E9DCC8"></i>错配窗口（病原 &gt; 益菌）</span>
+      </div>
+      <div id="mainChart"></div>
+      <div class="grid4" id="kpis" style="margin-top:14px"></div>
+      <p class="note" style="margin-top:10px">
+        曲线形态的依据：β 多样性随季节显著分异（<b>L01</b>）；病原真菌丰度随生长季上升（<b>L10</b>，当归幼苗期实测）；
+        α 多样性呈单峰（<b>L02</b>，三七生育期实测）。具体数值为模型推算，<b>不作实测引用</b>。
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>关键类群的月度变化</h2>
+      <div class="sub">同一片土里，不同微生物的节奏并不一致——这正是“时机”存在的生物学基础</div>
+      <div class="grid6" id="minis"></div>
+      <p class="note" style="margin-top:10px">
+        纵轴为该类群相对丰度（%）的模型推算值；峰值标签为模型输出。方向性结论有文献支撑，绝对数值需实测替换。
+      </p>
+    </div>
+    <div class="card">
+      <h2>群落结构：有益与病原的此消彼长</h2>
+      <div class="sub">把每月的益菌供给与病原胁迫换算成占比，看群落“天平”如何倾斜（模型推算）</div>
+      <div id="stackChart"></div>
+    </div>
+
+    <div class="card">
+      <h2>三个产区横向对比</h2>
+      <div class="sub">同样的 12 个月，不同的节律——这是“一区一策”的依据</div>
+      <div class="grid3" id="regionCards"></div>
+      <p class="note" style="margin-top:10px">
+       岷县（冷凉湿润）病原压力峰值最陡；靖远（干旱灌区）微生物总量整体偏低、错配窗口最窄；
+       华池（黄土塬）介于两者之间。三地共用一套模型、参数各自标定。
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ 季节·菌·药 ============ -->
+  <section id="tab-matrix" class="hidden">
+    <div class="card">
+      <div class="row" style="align-items:center">
+        <div style="flex:1">
+          <h2>哪个季节、哪种菌、对哪味药作用最明显</h2>
+          <div class="sub">颜色深浅＝作用强度（模型推算）；角标＝证据等级。点击任意格子查看机理与文献出处</div>
+        </div>
+        <div class="seg" id="seasonSeg"></div>
+      </div>
+      <div class="hscroll"><div id="matrixWrap"></div></div>
+      <div class="mx-hint">← 左右滑动查看全部 10 味药材 →</div>
+      <div class="legend" style="margin-top:10px">
+        <span><i style="background:#2F6B4F"></i>促进（有益菌）</span>
+        <span><i style="background:#B0472F"></i>抑制（病原菌）</span>
+        <span>色深：浅＝弱 · 中＝中 · 深＝强</span>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card" style="margin-bottom:0">
+        <h2>本季作用最明显的五组</h2>
+        <div class="sub" id="rankSub"></div>
+        <div id="rankList"></div>
+      </div>
+      <div class="card" style="margin-bottom:0" id="mDetail"></div>
+    </div>
+  </section>
+
+  <!-- ============ 全药材总览 ============ -->
+  <section id="tab-overview" class="hidden">
+    <div class="card">
+      <div class="row" style="align-items:center">
+        <div style="flex:1">
+          <h2>十味药材的全年适配总览</h2>
+          <div class="sub">一行一味药，一格一个月；颜色越绿越适合，越红越危险。点击行可跳到该药的详细日历</div>
+        </div>
+        <div class="seg" id="ovRegionSeg"></div>
+      </div>
+      <div class="hscroll"><div id="ovGrid"></div></div>
+      <div class="mx-hint">← 左右滑动查看 12 个月 →</div>
+    </div>
+
+    <div class="grid2">
+      <div class="card" style="margin-bottom:0">
+        <h2>当月药材排名</h2>
+        <div class="sub" id="ovRankSub"></div>
+        <div id="ovRank"></div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <h2>全年风险窗口长度</h2>
+        <div class="sub">每味药全年处于“抑制／强抑制”的月份数——数字越大，越需要时序管理</div>
+        <div id="ovMonths"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 适配日历 ============ -->
+  <section id="tab-cal" class="hidden">
+    <div class="card">
+      <h2>这块地，这个月适合种什么</h2>
+      <div class="sub">选择药材，查看 12 个月的微生物适配指数（MAI，模型推算）。点击月份查看判定依据与证据等级</div>
+      <div class="chips" id="herbChips" style="margin-bottom:14px"></div>
+      <div class="hscroll">
+        <div class="monlabels" id="monLabels"></div>
+        <div class="cal" id="cal"></div>
+      </div>
+      <div class="mx-hint">← 左右滑动查看 12 个月 →</div>
+      <div class="note" style="margin-top:9px">
+        MAI ≥ 64 强促进 · 56—64 促进 · 48—56 中性 · 40—48 抑制 · &lt; 40 强抑制；权重来自文献先验（L03 / L08 / L11）
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card" id="detailCard" style="margin-bottom:0"></div>
+      <div class="card" style="margin-bottom:0">
+        <h2>全年适配曲线</h2>
+        <div class="sub" id="detailSub"></div>
+        <div id="detailChart"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 窗口推荐 ============ -->
+  <section id="tab-win" class="hidden">
+    <div class="card">
+      <h2>今年该怎么排农事</h2>
+      <div class="sub">综合微生物时序与药材物候，给出三条时间窗口（基于模型推算）</div>
+      <div class="row" style="align-items:center;margin-bottom:6px">
+        <div class="chips" id="winHerbs" style="flex:1"></div>
+        <div class="seg" id="winRegion"></div>
+      </div>
+      <div id="winBody"></div>
+    </div>
+  </section>
+
+  <!-- ============ 连作预警 ============ -->
+  <section id="tab-risk" class="hidden">
+    <div class="card">
+      <h2>连作年限风险预警</h2>
+      <div class="sub">拖动滑块，查看连作年限增加时病原累积与风险评分的变化</div>
+      <div class="row" style="align-items:center;margin-bottom:14px">
+        <div class="seg" id="riskRegion"></div>
+        <div style="flex:1;display:flex;align-items:center;gap:12px">
+          <span style="font-size:12.5px;color:var(--muted);white-space:nowrap">连作年限</span>
+          <input id="years" type="range" min="1" max="15" value="5" step="1" style="flex:1;accent-color:#2F6B4F">
+          <b id="yearsVal" style="font-size:15px;min-width:56px">5 年</b>
+        </div>
+      </div>
+      <div class="grid2"><div id="riskGauge"></div><div id="riskCurve"></div></div>
+      <div id="riskAdvice" style="margin-top:6px"></div>
+      <p class="note" style="margin-top:10px">
+        风险曲线按饱和增长模型拟合：连作 5 年减产约 40%（<b>L03</b>，党参实测 40.47%）；连作 1/3/6 年群落持续演替（<b>L05</b>）；
+        有益菌缺失导致毒物累积、死苗率升（<b>L06</b>，回接后死苗率降 40.1%）。
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ 证据溯源 ============ -->
+  <section id="tab-refs" class="hidden">
+    <div class="card">
+      <h2>37 篇支撑文献（全部可核验）</h2>
+      <div class="sub">PubMed 33 篇（含中文文献 10 篇）· Europe PMC 3 篇 · bioRxiv 1 篇；每条含 PMID 或 DOI，可回原文核对</div>
+      <div class="grid4" id="refStats" style="margin-bottom:14px"></div>
+      <h3 class="sec">证据覆盖地图：哪些“菌—药”关系有直接研究</h3>
+      <div class="sub" style="margin-bottom:8px">格内字母为证据等级；空白＝尚无任何文献，属项目执行期需要填补的空白</div>
+      <div class="hscroll"><div id="evidMap"></div></div>
+      <div class="mx-hint">← 左右滑动查看 10 味药材 →</div>
+      <div style="display:flex;gap:14px;align-items:center;font-size:12px;color:#6b7568;margin-top:10px">
+        <span><span class="grade gA">A</span> 该药材直接验证</span>
+        <span><span class="grade gB">B</span> 近缘作物或机制</span>
+        <span><span class="grade gC">C</span> 模型推算</span>
+        <span><span style="display:inline-block;width:15px;height:15px;border:1px dashed #C9D0C6;border-radius:4px;vertical-align:middle"></span> 无文献</span>
+      </div>
+
+      <h3 class="sec">文献年份分布</h3>
+      <div id="yearChart"></div>
+
+      <h3 class="sec">文献清单</h3>
+      <div id="refList"></div>
+      <p class="note" style="margin-top:10px">
+        检索与去重过程见配套《陇药土候-数据模型表.xlsx》工作表 11—14；文中数值均从原文 Abstract 摘录，未作二次加工。
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ 说明 ============ -->
+  <section id="tab-doc" class="hidden">
+    <div class="card">
+      <h2>方法、口径与边界</h2>
+      <div class="sub">一个诚实的模型，比一个完美的模型更值得信任</div>
+
+      <h3 class="sec">一、三类数据，必须分清</h3>
+      <table>
+        <tr><th>类型</th><th>来源</th><th>在平台中的呈现</th></tr>
+        <tr><td><b>实测值</b></td><td>37 篇文献中报告的原始数值</td><td>“证据溯源”页的原文摘录，标注 PMID/DOI</td></tr>
+        <tr><td><b>模型推算</b></td><td>依据文献方向 + 产区气候参数生成</td><td>时序曲线、MAI、矩阵强度（均标“模型推算”）</td></tr>
+        <tr><td><b>待实测</b></td><td>项目执行期的 648 份采样</td><td>数据结构已预留，实测后直接替换</td></tr>
+      </table>
+
+      <h3 class="sec">二、证据分级</h3>
+      <p><span class="grade gA">A</span> 在该药材上直接验证：如当归镰刀菌/链霉菌（L08）、党参连作减产（L03、L11）、黄芪轮作有益菌（L04）、黄芩间作（L12）。<br>
+         <span class="grade gB">B</span> 同属或近缘作物、或机制层面证据：如三七生育期规律外推到其他根类药材（L02）。<br>
+         <span class="grade gC">C</span> 无直接文献，纯模型推算，仅作方向参考。</p>
+
+      <h3 class="sec">三、MAI 适配指数</h3>
+      <p style="font-family:Consolas,monospace;background:#F7F8F3;padding:12px 14px;border-radius:9px;font-size:12.5px">
+        MAI = 100 × [ 0.50 + 0.55 ×（益菌供给 − 病原胁迫）+ 0.08 ×（地温适宜度 − 0.50） ]
+      </p>
+      <ul style="margin-left:18px;font-size:13px;color:#3a4438;line-height:1.9">
+        <li>益菌供给／病原胁迫 = Σ（药材对该类群权重 × 相对丰度／生理量程）÷ Σ权重</li>
+        <li>权重来自文献先验 + 田间数据拟合，逐药材不同（见数据模型表 07 表）</li>
+        <li>MAI 是模型输出，不是测量值；等级仅表示“相对优劣”，不代表绝对产量</li>
+      </ul>
+
+      <h3 class="sec">四、已知局限</h3>
+      <ul style="margin-left:18px;font-size:13px;color:#3a4438;line-height:1.9">
+        <li>37 篇文献覆盖全部 10 味药材，其中中文文献 10 篇（应用生态学报、环境科学、中国中药杂志、生物工程学报），A 级证据集中在当归、党参、黄芪、黄芩、半夏、枸杞、柴胡、大黄 8 味；</li>
+        <li>文献多为单点或单生长季研究，跨年产际差异尚未纳入；</li>
+        <li>测序存在批次效应，实测阶段需重复样与阴性对照校正；</li>
+        <li>半夏主产陇南（长江流域），本版以岷县数据近似，正式版将增补陇南产区。</li>
+      </ul>
+
+    </div>
+  </section>
+</main>
+
+<div class="foot">
+  陇药土候 v0.2 ｜ 第五届甘肃省青年生态文明创新创业大赛 · 绿色发展赛道 · 创意组 ｜
+  曲线与指数为模型推算，文献数值以证据卡标注，未作任何篡改
+</div>
+
+<script>
+const DATA = {"regions": [{"id": "G1", "name": "岷县·陇中黄土丘陵区", "short": "岷县", "eco": "陇中黄土丘陵沟壑区", "county": "定西市岷县", "soil": "黑垆土／黄绵土", "ph": 7.4, "som": 2.8, "prec": 580, "irrig": "雨养为主", "t_mean": 6.5, "t_min": -3.0, "t_max": 17.5, "lat": "34°25′N", "lon": "104°02′E", "alt": 2314, "herbs": ["当归", "党参", "黄芪"], "note": "当归道地产区，种植年限长、连作障碍突出，根腐病与麻口病高发"}, {"id": "G2", "name": "靖远·沿黄灌溉绿洲区", "short": "靖远", "eco": "沿黄灌溉绿洲区", "county": "白银市靖远县", "soil": "灌淤土", "ph": 8.2, "som": 1.1, "prec": 240, "irrig": "引黄提灌", "t_mean": 9.2, "t_min": -6.0, "t_max": 22.5, "lat": "36°34′N", "lon": "104°41′E", "alt": 1467, "herbs": ["枸杞", "甘草", "板蓝根"], "note": "高蒸发、盐碱化风险，微生物量低但对灌溉与有机物料响应敏感"}, {"id": "G3", "name": "华池·陇东黄土高原区", "short": "华池", "eco": "陇东黄土高原区", "county": "庆阳市华池县", "soil": "黄绵土", "ph": 8.0, "som": 1.4, "prec": 520, "irrig": "雨养为主", "t_mean": 7.8, "t_min": -5.0, "t_max": 19.8, "lat": "36°27′N", "lon": "108°00′E", "alt": 1421, "herbs": ["柴胡", "黄芩", "大黄"], "note": "土层深厚、昼夜温差大，根类药材品质形成条件好，但春季干旱限制出苗"}], "months": [{"m": 1, "season": "冬季", "pheno": "越冬休眠期", "note": "土壤封冻，微生物活性全年最低"}, {"m": 2, "season": "冬季", "pheno": "越冬休眠期", "note": "地温最低，病原菌与有益菌同步受抑"}, {"m": 3, "season": "春季", "pheno": "返青／整地播种期", "note": "冻融交替，细菌率先复苏"}, {"m": 4, "season": "春季", "pheno": "播种／移栽期", "note": "地温回升，芽孢杆菌、假单胞菌快速增殖"}, {"m": 5, "season": "春季", "pheno": "苗期", "note": "根际建立，菌根侵染开始"}, {"m": 6, "season": "夏季", "pheno": "旺长期", "note": "微生物总量快速攀升，病原菌同步复苏"}, {"m": 7, "season": "夏季", "pheno": "开花／根膨大初期", "note": "水热同季，镰刀菌进入第一个高峰"}, {"m": 8, "season": "夏季", "pheno": "根膨大盛期", "note": "微生物总量全年峰值，病原压力最大"}, {"m": 9, "season": "秋季", "pheno": "根充实／品质形成期", "note": "地温回落，真菌占比上升"}, {"m": 10, "season": "秋季", "pheno": "采收期", "note": "有益菌仍活跃，病原菌回落"}, {"m": 11, "season": "秋季", "pheno": "采后／越冬准备期", "note": "微生物量快速下降"}, {"m": 12, "season": "冬季", "pheno": "越冬休眠期", "note": "低温抑制，群落趋于稳定"}], "microbes": [{"id": "B1", "cn": "芽孢杆菌", "latin": "Bacillus spp.", "group": "细菌", "dir": "+", "func": "分泌抗菌脂肽、解磷解钾、形成生物膜保护根表", "method": "16S rRNA 扩增子测序"}, {"id": "B2", "cn": "假单胞菌", "latin": "Pseudomonas spp.", "group": "细菌", "dir": "+", "func": "铁载体竞争、诱导系统抗性（ISR）、降解酚酸", "method": "16S rRNA 扩增子测序"}, {"id": "B3", "cn": "慢生根瘤菌", "latin": "Bradyrhizobium spp.", "group": "细菌", "dir": "+", "func": "与豆科药材共生固氮，提升氮素供应", "method": "16S + nifH 定量"}, {"id": "B4", "cn": "链霉菌", "latin": "Streptomyces spp.", "group": "细菌", "dir": "+", "func": "产抗生素类物质、降解连作化感物质", "method": "16S rRNA 扩增子测序"}, {"id": "F1", "cn": "木霉", "latin": "Trichoderma spp.", "group": "真菌", "dir": "+", "func": "重寄生病原菌、分泌细胞壁降解酶、促根", "method": "ITS 扩增子测序"}, {"id": "F2", "cn": "丛枝菌根真菌", "latin": "Funneliformis / Glomus", "group": "真菌", "dir": "+", "func": "扩大磷吸收面积、提高抗旱与抗病能力", "method": "ITS + 根段侵染率镜检"}, {"id": "F3", "cn": "镰刀菌", "latin": "Fusarium spp.", "group": "真菌", "dir": "-", "func": "引起根腐病、枯萎病，连作地块累积最快", "method": "ITS 扩增子测序 + qPCR"}, {"id": "F4", "cn": "锈腐菌", "latin": "Ilyonectria spp.", "group": "真菌", "dir": "-", "func": "引起当归、党参锈腐与麻口病", "method": "ITS 扩增子测序"}, {"id": "F5", "cn": "丝核菌", "latin": "Rhizoctonia spp.", "group": "真菌", "dir": "-", "func": "引起立枯病、苗期猝倒", "method": "ITS 扩增子测序"}, {"id": "F6", "cn": "链格孢", "latin": "Alternaria spp.", "group": "真菌", "dir": "-", "func": "引起叶斑病，影响地上部光合与产量", "method": "ITS 扩增子测序"}, {"id": "I1", "cn": "固氮基因 nifH", "latin": "nifH", "group": "功能基因", "dir": "+", "func": "表征生物固氮潜力", "method": "qPCR 绝对定量"}, {"id": "I2", "cn": "解磷基因 phoD", "latin": "phoD", "group": "功能基因", "dir": "+", "func": "表征有机磷矿化能力", "method": "qPCR 绝对定量"}, {"id": "I3", "cn": "细菌／真菌比", "latin": "B/F ratio", "group": "综合指标", "dir": "+", "func": "比值高通常指示细菌主导的健康土壤", "method": "由测序结果计算"}, {"id": "I4", "cn": "Shannon 多样性", "latin": "Shannon index", "group": "综合指标", "dir": "+", "func": "群落多样性，过低提示退化、过高不必然高产", "method": "由测序结果计算"}], "herbs": [{"name": "当归", "latin": "Angelica sinensis", "region": "岷县", "quality": "阿魏酸、当归多糖、挥发油", "disease": "根腐病、麻口病（锈腐）", "t_opt": 18.5, "t_tol": 6.5, "m_opt": 62, "m_tol": 16, "sow": "6 月育苗／次年 4 月移栽", "harvest": "10 月下旬—11 月上旬", "d": {"F3": 0.95, "F4": 0.85, "F5": 0.55, "F6": 0.25}, "b": {"B1": 0.75, "B2": 0.6, "B4": 0.6, "F1": 0.85, "F2": 0.55}, "pheno": "喜冷凉湿润，忌高温高湿；根膨大期与病原菌高峰期高度重叠"}, {"name": "党参", "latin": "Codonopsis pilosula", "region": "陇西／渭源", "quality": "党参炔苷、党参多糖", "disease": "根腐病、紫纹羽病", "t_opt": 19.0, "t_tol": 6.5, "m_opt": 60, "m_tol": 16, "sow": "3 月下旬—4 月中旬", "harvest": "10 月中下旬", "d": {"F3": 0.88, "F4": 0.6, "F5": 0.5, "F6": 0.2}, "b": {"B1": 0.7, "B2": 0.55, "B4": 0.55, "F1": 0.75, "F2": 0.7}, "pheno": "怕涝怕旱，苗期立枯与后期根腐并重"}, {"name": "黄芪", "latin": "Astragalus membranaceus", "region": "陇西／岷县", "quality": "黄芪甲苷、毛蕊异黄酮葡萄糖苷", "disease": "根腐病、白粉病", "t_opt": 20.0, "t_tol": 7.0, "m_opt": 58, "m_tol": 17, "sow": "4 月上旬", "harvest": "10 月下旬—11 月", "d": {"F3": 0.8, "F4": 0.4, "F5": 0.6, "F6": 0.25}, "b": {"B1": 0.7, "B2": 0.55, "B3": 0.8, "B4": 0.5, "F1": 0.65, "F2": 0.75}, "pheno": "豆科药材，与根瘤菌、菌根真菌协同明显"}, {"name": "甘草", "latin": "Glycyrrhiza uralensis", "region": "民勤／靖远", "quality": "甘草酸、甘草苷", "disease": "锈病、根腐病", "t_opt": 24.0, "t_tol": 8.0, "m_opt": 40, "m_tol": 15, "sow": "4 月中旬—5 月上旬", "harvest": "10—11 月", "d": {"F3": 0.5, "F4": 0.2, "F5": 0.3, "F6": 0.35}, "b": {"B1": 0.6, "B2": 0.5, "B3": 0.75, "F2": 0.6}, "pheno": "耐旱耐盐，怕积水；灌区高蒸发下微生物量偏低"}, {"name": "柴胡", "latin": "Bupleurum chinense", "region": "庆阳／定西", "quality": "柴胡皂苷 a、柴胡皂苷 d", "disease": "根腐病、斑枯病", "t_opt": 18.5, "t_tol": 7.0, "m_opt": 58, "m_tol": 16, "sow": "4 月春播／11 月冬播", "harvest": "10—11 月", "d": {"F3": 0.72, "F4": 0.45, "F5": 0.5, "F6": 0.4}, "b": {"B1": 0.65, "B2": 0.55, "B4": 0.5, "F1": 0.6, "F2": 0.6}, "pheno": "种子休眠明显，出苗期土壤微生物状态决定成苗率"}, {"name": "大黄", "latin": "Rheum palmatum", "region": "华池／礼县", "quality": "大黄素、番泻苷", "disease": "轮纹病、根腐病", "t_opt": 16.0, "t_tol": 6.0, "m_opt": 66, "m_tol": 15, "sow": "4 月直播／育苗移栽", "harvest": "10 月", "d": {"F3": 0.6, "F4": 0.5, "F5": 0.35, "F6": 0.3}, "b": {"B1": 0.6, "B2": 0.55, "B4": 0.55, "F1": 0.55, "F2": 0.65}, "pheno": "喜凉爽湿润，耐寒不耐高温，海拔 1800 m 以上品质更优"}, {"name": "黄芩", "latin": "Scutellaria baicalensis", "region": "华池／庆城", "quality": "黄芩苷、汉黄芩苷", "disease": "根腐病、叶枯病", "t_opt": 21.0, "t_tol": 7.5, "m_opt": 50, "m_tol": 15, "sow": "4 月上旬", "harvest": "10 月", "d": {"F3": 0.65, "F4": 0.35, "F5": 0.45, "F6": 0.35}, "b": {"B1": 0.6, "B2": 0.5, "B4": 0.55, "F1": 0.55, "F2": 0.5}, "pheno": "耐旱怕涝，根系分布深，对深层土壤微生物响应更明显"}, {"name": "半夏", "latin": "Pinellia ternata", "region": "清水／西和", "quality": "总生物碱、半夏多糖", "disease": "块茎腐烂病、立枯病", "t_opt": 18.0, "t_tol": 5.5, "m_opt": 72, "m_tol": 12, "sow": "3 月下旬—4 月（块茎）", "harvest": "9—10 月", "d": {"F3": 0.9, "F4": 0.7, "F5": 0.7, "F6": 0.2}, "b": {"B1": 0.7, "B2": 0.6, "B4": 0.5, "F1": 0.7, "F2": 0.45}, "pheno": "喜阴湿，块茎直接接触土壤，对病原菌最敏感，忌连作"}, {"name": "枸杞", "latin": "Lycium barbarum", "region": "靖远／景泰", "quality": "枸杞多糖、甜菜碱、类胡萝卜素", "disease": "根腐病、白粉病", "t_opt": 24.0, "t_tol": 8.0, "m_opt": 45, "m_tol": 16, "sow": "3 月下旬—4 月移栽", "harvest": "6—9 月（多批次）", "d": {"F3": 0.7, "F4": 0.25, "F5": 0.4, "F6": 0.45}, "b": {"B1": 0.6, "B2": 0.55, "B4": 0.55, "F1": 0.6, "F2": 0.7}, "pheno": "木本、多年生，根际微生物随树龄累积，采果期需肥水同步"}, {"name": "板蓝根", "latin": "Isatis indigotica", "region": "民乐／靖远", "quality": "靛玉红、告依春（R,S-告依春）", "disease": "根腐病、霜霉病", "t_opt": 20.0, "t_tol": 7.5, "m_opt": 60, "m_tol": 16, "sow": "4 月中下旬", "harvest": "10 月", "d": {"F3": 0.78, "F4": 0.3, "F5": 0.5, "F6": 0.35}, "b": {"B1": 0.65, "B2": 0.5, "B4": 0.5, "F1": 0.6, "F2": 0.55}, "pheno": "生长期短、密度高，苗期土壤带菌量直接决定保苗率"}], "series": [{"region": "G1", "month": 1, "season": "冬季", "pheno": "越冬休眠期", "note": "土壤封冻，微生物活性全年最低", "soil_temp": -2.8, "moisture": 33.1, "total_16s": 1.24, "shannon": 6.28, "bf_ratio": 9.2, "bacillus": 1.4, "pseudomonas": 0.9, "trichoderma": 0.35, "amf": 10.0, "fusarium": 0.65, "ilyonectria": 0.28, "rhizoctonia": 0.18, "alternaria": 0.9, "nifh": 0.6, "phod": 1.2, "streptomyces": 1.1}, {"region": "G1", "month": 2, "season": "冬季", "pheno": "越冬休眠期", "note": "地温最低，病原菌与有益菌同步受抑", "soil_temp": -2.5, "moisture": 30.1, "total_16s": 1.05, "shannon": 6.19, "bf_ratio": 9.1, "bacillus": 1.4, "pseudomonas": 0.9, "trichoderma": 0.35, "amf": 10.0, "fusarium": 0.65, "ilyonectria": 0.28, "rhizoctonia": 0.18, "alternaria": 0.9, "nifh": 0.6, "phod": 1.2, "streptomyces": 1.1}, {"region": "G1", "month": 3, "season": "春季", "pheno": "返青／整地播种期", "note": "冻融交替，细菌率先复苏", "soil_temp": 0.4, "moisture": 31.4, "total_16s": 1.21, "shannon": 6.26, "bf_ratio": 8.7, "bacillus": 1.4, "pseudomonas": 1.71, "trichoderma": 0.35, "amf": 10.0, "fusarium": 0.65, "ilyonectria": 0.28, "rhizoctonia": 0.18, "alternaria": 0.9, "nifh": 0.6, "phod": 2.3, "streptomyces": 1.31}, {"region": "G1", "month": 4, "season": "春季", "pheno": "播种／移栽期", "note": "地温回升，芽孢杆菌、假单胞菌快速增殖", "soil_temp": 5.1, "moisture": 36.6, "total_16s": 2.21, "shannon": 6.39, "bf_ratio": 11.7, "bacillus": 3.84, "pseudomonas": 2.87, "trichoderma": 0.35, "amf": 10.0, "fusarium": 0.65, "ilyonectria": 0.28, "rhizoctonia": 0.2, "alternaria": 0.9, "nifh": 0.6, "phod": 3.57, "streptomyces": 2.3}, {"region": "G1", "month": 5, "season": "春季", "pheno": "苗期", "note": "根际建立，菌根侵染开始", "soil_temp": 10.4, "moisture": 44.3, "total_16s": 3.9, "shannon": 6.74, "bf_ratio": 15.6, "bacillus": 6.11, "pseudomonas": 3.48, "trichoderma": 0.94, "amf": 17.8, "fusarium": 0.94, "ilyonectria": 0.28, "rhizoctonia": 0.7, "alternaria": 0.93, "nifh": 2.52, "phod": 4.1, "streptomyces": 3.14}, {"region": "G1", "month": 6, "season": "夏季", "pheno": "旺长期", "note": "微生物总量快速攀升，病原菌同步复苏", "soil_temp": 14.9, "moisture": 52.5, "total_16s": 5.99, "shannon": 6.98, "bf_ratio": 18.3, "bacillus": 7.0, "pseudomonas": 3.21, "trichoderma": 2.13, "amf": 38.3, "fusarium": 3.2, "ilyonectria": 0.36, "rhizoctonia": 1.33, "alternaria": 1.78, "nifh": 4.3, "phod": 3.57, "streptomyces": 3.23}, {"region": "G1", "month": 7, "season": "夏季", "pheno": "开花／根膨大初期", "note": "水热同季，镰刀菌进入第一个高峰", "soil_temp": 17.3, "moisture": 58.9, "total_16s": 7.91, "shannon": 7.24, "bf_ratio": 21.3, "bacillus": 6.11, "pseudomonas": 2.2, "trichoderma": 2.83, "amf": 51.6, "fusarium": 5.07, "ilyonectria": 1.16, "rhizoctonia": 1.52, "alternaria": 2.75, "nifh": 5.0, "phod": 2.43, "streptomyces": 2.53}, {"region": "G1", "month": 8, "season": "夏季", "pheno": "根膨大盛期", "note": "微生物总量全年峰值，病原压力最大", "soil_temp": 17.0, "moisture": 61.9, "total_16s": 8.8, "shannon": 7.36, "bf_ratio": 22.4, "bacillus": 3.84, "pseudomonas": 1.04, "trichoderma": 2.51, "amf": 52.9, "fusarium": 5.57, "ilyonectria": 1.91, "rhizoctonia": 1.1, "alternaria": 3.1, "nifh": 4.3, "phod": 2.04, "streptomyces": 1.9}, {"region": "G1", "month": 9, "season": "秋季", "pheno": "根充实／品质形成期", "note": "地温回落，真菌占比上升", "soil_temp": 14.1, "moisture": 60.6, "total_16s": 8.0, "shannon": 7.19, "bf_ratio": 22.1, "bacillus": 1.4, "pseudomonas": 0.9, "trichoderma": 1.42, "amf": 41.7, "fusarium": 4.45, "ilyonectria": 2.12, "rhizoctonia": 0.45, "alternaria": 2.59, "nifh": 2.52, "phod": 2.68, "streptomyces": 2.03}, {"region": "G1", "month": 10, "season": "秋季", "pheno": "采收期", "note": "有益菌仍活跃，病原菌回落", "soil_temp": 9.4, "moisture": 55.4, "total_16s": 6.16, "shannon": 7.04, "bf_ratio": 18.9, "bacillus": 1.4, "pseudomonas": 0.9, "trichoderma": 0.42, "amf": 22.1, "fusarium": 2.26, "ilyonectria": 1.66, "rhizoctonia": 0.18, "alternaria": 1.57, "nifh": 0.6, "phod": 2.74, "streptomyces": 2.19}, {"region": "G1", "month": 11, "season": "秋季", "pheno": "采后／越冬准备期", "note": "微生物量快速下降", "soil_temp": 4.1, "moisture": 47.7, "total_16s": 3.91, "shannon": 6.75, "bf_ratio": 15.0, "bacillus": 1.4, "pseudomonas": 0.9, "trichoderma": 0.35, "amf": 10.0, "fusarium": 0.65, "ilyonectria": 0.81, "rhizoctonia": 0.18, "alternaria": 0.9, "nifh": 0.6, "phod": 2.2, "streptomyces": 1.85}, {"region": "G1", "month": 12, "season": "冬季", "pheno": "越冬休眠期", "note": "低温抑制，群落趋于稳定", "soil_temp": -0.4, "moisture": 39.5, "total_16s": 2.16, "shannon": 6.42, "bf_ratio": 12.0, "bacillus": 1.4, "pseudomonas": 0.9, "trichoderma": 0.35, "amf": 10.0, "fusarium": 0.65, "ilyonectria": 0.28, "rhizoctonia": 0.18, "alternaria": 0.9, "nifh": 0.6, "phod": 1.44, "streptomyces": 1.32}, {"region": "G2", "month": 1, "season": "冬季", "pheno": "越冬休眠期", "note": "土壤封冻，微生物活性全年最低", "soil_temp": -5.7, "moisture": 16.7, "total_16s": 0.85, "shannon": 6.26, "bf_ratio": 9.8, "bacillus": 1.4, "pseudomonas": 0.9, "trichoderma": 0.24, "amf": 6.2, "fusarium": 0.47, "ilyonectria": 0.14, "rhizoctonia": 0.18, "alternaria": 0.9, "nifh": 0.6, "phod": 1.2, "streptomyces": 1.1}, {"region": "G2", "month": 2, "season": "冬季", "pheno": "越冬休眠期", "note": "地温最低，病原菌与有益菌同步受抑", "soil_temp": -5.3, "moisture": 18.5, "total_16s": 0.73, "shannon": 6.19, "bf_ratio": 7.9, "bacillus": 1.4, "pseudomonas": 0.9, "trichoderma": 0.24, "amf": 6.2, "fusarium": 0.47, "ilyonectria": 0.14, "rhizoctonia": 0.18, "alternaria": 0.9, "nifh": 0.6, "phod": 1.2, "streptomyces": 1.1}, {"region": "G2", "month": 3, "season": "春季", "pheno": "返青／整地播种期", "note": "冻融交替，细菌率先复苏", "soil_temp": -1.3, "moisture": 21.0, "total_16s": 0.82, "shannon": 6.22, "bf_ratio": 10.2, "bacillus": 1.4, "pseudomonas": 1.71, "trichoderma": 0.24, "amf": 6.2, "fusarium": 0.47, "ilyonectria": 0.14, "rhizoctonia": 0.18, "alternaria": 0.9, "nifh": 0.6, "phod": 2.3, "streptomyces": 1.31}, {"region": "G2", "month": 4, "season": "春季", "pheno": "播种／移栽期", "note": "地温回升，芽孢杆菌、假单胞菌快速增殖", "soil_temp": 5.3, "moisture": 23.5, "total_16s": 1.39, "shannon": 6.38, "bf_ratio": 11.8, "bacillus": 3.84, "pseudomonas": 2.87, "trichoderma": 0.24, "amf": 6.2, "fusarium": 0.47, "ilyonectria": 0.14, "rhizoctonia": 0.2, "alternaria": 0.9, "nifh": 0.6, "phod": 3.57, "streptomyces": 2.3}, {"region": "G2", "month": 5, "season": "春季", "pheno": "苗期", "note": "根际建立，菌根侵染开始", "soil_temp": 12.7, "moisture": 31.3, "total_16s": 2.51, "shannon": 6.67, "bf_ratio": 16.1, "bacillus": 6.11, "pseudomonas": 3.48, "trichoderma": 0.66, "amf": 11.0, "fusarium": 0.59, "ilyonectria": 0.14, "rhizoctonia": 0.7, "alternaria": 0.93, "nifh": 2.52, "phod": 4.1, "streptomyces": 3.14}, {"region": "G2", "month": 6, "season": "夏季", "pheno": "旺长期", "note": "微生物总量快速攀升，病原菌同步复苏", "soil_temp": 18.8, "moisture": 32.0, "total_16s": 3.77, "shannon": 7.03, "bf_ratio": 19.0, "bacillus": 7.0, "pseudomonas": 3.21, "trichoderma": 1.49, "amf": 23.7, "fusarium": 1.49, "ilyonectria": 0.18, "rhizoctonia": 1.33, "alternaria": 1.78, "nifh": 4.3, "phod": 3.57, "streptomyces": 3.23}, {"region": "G2", "month": 7, "season": "夏季", "pheno": "开花／根膨大初期", "note": "水热同季，镰刀菌进入第一个高峰", "soil_temp": 22.2, "moisture": 31.3, "total_16s": 4.78, "shannon": 7.22, "bf_ratio": 21.8, "bacillus": 6.11, "pseudomonas": 2.2, "trichoderma": 1.98, "amf": 32.0, "fusarium": 2.24, "ilyonectria": 0.58, "rhizoctonia": 1.52, "alternaria": 2.75, "nifh": 5.0, "phod": 2.43, "streptomyces": 2.53}, {"region": "G2", "month": 8, "season": "夏季", "pheno": "根膨大盛期", "note": "微生物总量全年峰值，病原压力最大", "soil_temp": 21.8, "moisture": 29.5, "total_16s": 5.12, "shannon": 7.27, "bf_ratio": 23.0, "bacillus": 3.84, "pseudomonas": 1.04, "trichoderma": 1.76, "amf": 32.8, "fusarium": 2.43, "ilyonectria": 0.96, "rhizoctonia": 1.1, "alternaria": 3.1, "nifh": 4.3, "phod": 2.04, "streptomyces": 1.9}, {"region": "G2", "month": 9, "season": "秋季", "pheno": "根充实／品质形成期", "note": "地温回落，真菌占比上升", "soil_temp": 17.8, "moisture": 21.0, "total_16s": 4.72, "shannon": 7.23, "bf_ratio": 22.2, "bacillus": 1.4, "pseudomonas": 0.9, "trichoderma": 0.99, "amf": 25.9, "fusarium": 1.99, "ilyonectria": 1.06, "rhizoctonia": 0.45, "alternaria": 2.59, "nifh": 2.52, "phod": 2.68, "streptomyces": 2.03}, {"region": "G2", "month": 10, "season": "秋季", "pheno": "采收期", "note": "有益菌仍活跃，病原菌回落", "soil_temp": 11.2, "moisture": 18.5, "total_16s": 3.63, "shannon": 6.98, "bf_ratio": 18.5, "bacillus": 1.4, "pseudomonas": 0.9, "trichoderma": 0.29, "amf": 13.7, "fusarium": 1.11, "ilyonectria": 0.83, "rhizoctonia": 0.18, "alternaria": 1.57, "nifh": 0.6, "phod": 2.74, "streptomyces": 2.19}, {"region": "G2", "month": 11, "season": "秋季", "pheno": "采后／越冬准备期", "note": "微生物量快速下降", "soil_temp": 3.8, "moisture": 16.7, "total_16s": 2.53, "shannon": 6.69, "bf_ratio": 15.7, "bacillus": 1.4, "pseudomonas": 0.9, "trichoderma": 0.24, "amf": 6.2, "fusarium": 0.47, "ilyonectria": 0.4, "rhizoctonia": 0.18, "alternaria": 0.9, "nifh": 0.6, "phod": 2.2, "streptomyces": 1.85}, {"region": "G2", "month": 12, "season": "冬季", "pheno": "越冬休眠期", "note": "低温抑制，群落趋于稳定", "soil_temp": -2.3, "moisture": 16.0, "total_16s": 1.42, "shannon": 6.46, "bf_ratio": 11.4, "bacillus": 1.4, "pseudomonas": 0.9, "trichoderma": 0.24, "amf": 6.2, "fusarium": 0.47, "ilyonectria": 0.14, "rhizoctonia": 0.18, "alternaria": 0.9, "nifh": 0.6, "phod": 1.44, "streptomyces": 1.32}, {"region": "G3", "month": 1, "season": "冬季", "pheno": "越冬休眠期", "note": "土壤封冻，微生物活性全年最低", "soil_temp": -4.7, "moisture": 33.1, "total_16s": 1.12, "shannon": 6.2, "bf_ratio": 9.3, "bacillus": 1.4, "pseudomonas": 0.9, "trichoderma": 0.35, "amf": 10.0, "fusarium": 0.65, "ilyonectria": 0.28, "rhizoctonia": 0.18, "alternaria": 0.9, "nifh": 0.6, "phod": 1.2, "streptomyces": 1.1}, {"region": "G3", "month": 2, "season": "冬季", "pheno": "越冬休眠期", "note": "地温最低，病原菌与有益菌同步受抑", "soil_temp": -4.4, "moisture": 30.1, "total_16s": 0.92, "shannon": 6.1, "bf_ratio": 8.7, "bacillus": 1.4, "pseudomonas": 0.9, "trichoderma": 0.35, "amf": 10.0, "fusarium": 0.65, "ilyonectria": 0.28, "rhizoctonia": 0.18, "alternaria": 0.9, "nifh": 0.6, "phod": 1.2, "streptomyces": 1.1}, {"region": "G3", "month": 3, "season": "春季", "pheno": "返青／整地播种期", "note": "冻融交替，细菌率先复苏", "soil_temp": -0.9, "moisture": 31.4, "total_16s": 1.15, "shannon": 6.28, "bf_ratio": 8.8, "bacillus": 1.4, "pseudomonas": 1.71, "trichoderma": 0.35, "amf": 10.0, "fusarium": 0.65, "ilyonectria": 0.28, "rhizoctonia": 0.18, "alternaria": 0.9, "nifh": 0.6, "phod": 2.3, "streptomyces": 1.31}, {"region": "G3", "month": 4, "season": "春季", "pheno": "播种／移栽期", "note": "地温回升，芽孢杆菌、假单胞菌快速增殖", "soil_temp": 4.8, "moisture": 36.6, "total_16s": 1.99, "shannon": 6.46, "bf_ratio": 11.6, "bacillus": 3.84, "pseudomonas": 2.87, "trichoderma": 0.35, "amf": 10.0, "fusarium": 0.65, "ilyonectria": 0.28, "rhizoctonia": 0.2, "alternaria": 0.9, "nifh": 0.6, "phod": 3.57, "streptomyces": 2.3}, {"region": "G3", "month": 5, "season": "春季", "pheno": "苗期", "note": "根际建立，菌根侵染开始", "soil_temp": 11.2, "moisture": 44.3, "total_16s": 3.56, "shannon": 6.77, "bf_ratio": 16.3, "bacillus": 6.11, "pseudomonas": 3.48, "trichoderma": 0.94, "amf": 17.8, "fusarium": 0.9, "ilyonectria": 0.28, "rhizoctonia": 0.7, "alternaria": 0.93, "nifh": 2.52, "phod": 4.1, "streptomyces": 3.14}, {"region": "G3", "month": 6, "season": "夏季", "pheno": "旺长期", "note": "微生物总量快速攀升，病原菌同步复苏", "soil_temp": 16.6, "moisture": 52.5, "total_16s": 5.2, "shannon": 6.98, "bf_ratio": 18.3, "bacillus": 7.0, "pseudomonas": 3.21, "trichoderma": 2.13, "amf": 38.3, "fusarium": 2.79, "ilyonectria": 0.36, "rhizoctonia": 1.33, "alternaria": 1.78, "nifh": 4.3, "phod": 3.57, "streptomyces": 3.23}, {"region": "G3", "month": 7, "season": "夏季", "pheno": "开花／根膨大初期", "note": "水热同季，镰刀菌进入第一个高峰", "soil_temp": 19.5, "moisture": 58.9, "total_16s": 6.89, "shannon": 7.24, "bf_ratio": 21.1, "bacillus": 6.11, "pseudomonas": 2.2, "trichoderma": 2.83, "amf": 51.6, "fusarium": 4.36, "ilyonectria": 1.16, "rhizoctonia": 1.52, "alternaria": 2.75, "nifh": 5.0, "phod": 2.43, "streptomyces": 2.53}, {"region": "G3", "month": 8, "season": "夏季", "pheno": "根膨大盛期", "note": "微生物总量全年峰值，病原压力最大", "soil_temp": 19.2, "moisture": 61.9, "total_16s": 7.34, "shannon": 7.36, "bf_ratio": 22.9, "bacillus": 3.84, "pseudomonas": 1.04, "trichoderma": 2.51, "amf": 52.9, "fusarium": 4.77, "ilyonectria": 1.91, "rhizoctonia": 1.1, "alternaria": 3.1, "nifh": 4.3, "phod": 2.04, "streptomyces": 1.9}, {"region": "G3", "month": 9, "season": "秋季", "pheno": "根充实／品质形成期", "note": "地温回落，真菌占比上升", "soil_temp": 15.7, "moisture": 60.6, "total_16s": 6.72, "shannon": 7.18, "bf_ratio": 22.1, "bacillus": 1.4, "pseudomonas": 0.9, "trichoderma": 1.42, "amf": 41.7, "fusarium": 3.83, "ilyonectria": 2.12, "rhizoctonia": 0.45, "alternaria": 2.59, "nifh": 2.52, "phod": 2.68, "streptomyces": 2.03}, {"region": "G3", "month": 10, "season": "秋季", "pheno": "采收期", "note": "有益菌仍活跃，病原菌回落", "soil_temp": 10.0, "moisture": 55.4, "total_16s": 5.45, "shannon": 7.02, "bf_ratio": 19.7, "bacillus": 1.4, "pseudomonas": 0.9, "trichoderma": 0.42, "amf": 22.1, "fusarium": 2.0, "ilyonectria": 1.66, "rhizoctonia": 0.18, "alternaria": 1.57, "nifh": 0.6, "phod": 2.74, "streptomyces": 2.19}, {"region": "G3", "month": 11, "season": "秋季", "pheno": "采后／越冬准备期", "note": "微生物量快速下降", "soil_temp": 3.6, "moisture": 47.7, "total_16s": 3.55, "shannon": 6.7, "bf_ratio": 15.1, "bacillus": 1.4, "pseudomonas": 0.9, "trichoderma": 0.35, "amf": 10.0, "fusarium": 0.65, "ilyonectria": 0.81, "rhizoctonia": 0.18, "alternaria": 0.9, "nifh": 0.6, "phod": 2.2, "streptomyces": 1.85}, {"region": "G3", "month": 12, "season": "冬季", "pheno": "越冬休眠期", "note": "低温抑制，群落趋于稳定", "soil_temp": -1.8, "moisture": 39.5, "total_16s": 1.99, "shannon": 6.47, "bf_ratio": 12.1, "bacillus": 1.4, "pseudomonas": 0.9, "trichoderma": 0.35, "amf": 10.0, "fusarium": 0.65, "ilyonectria": 0.28, "rhizoctonia": 0.18, "alternaria": 0.9, "nifh": 0.6, "phod": 1.44, "streptomyces": 1.32}], "samples": [{"code": "G1-S01", "region": "G1", "region_name": "岷县", "lat": "34.38", "lon": "104.04", "alt": 2314, "soil": "黑垆土／黄绵土", "herb": "当归", "area": 32.5, "years": 7, "replicate": 3}, {"code": "G1-S02", "region": "G1", "region_name": "岷县", "lat": "34.52", "lon": "103.86", "alt": 2260, "soil": "黑垆土／黄绵土", "herb": "当归", "area": 45.0, "years": 4, "replicate": 3}, {"code": "G1-S03", "region": "G1", "region_name": "岷县", "lat": "34.21", "lon": "104.31", "alt": 2405, "soil": "黑垆土／黄绵土", "herb": "党参", "area": 57.5, "years": 2, "replicate": 3}, {"code": "G2-S01", "region": "G2", "region_name": "靖远", "lat": "36.57", "lon": "104.69", "alt": 1467, "soil": "灌淤土", "herb": "枸杞", "area": 32.5, "years": 7, "replicate": 3}, {"code": "G2-S02", "region": "G2", "region_name": "靖远", "lat": "36.71", "lon": "104.52", "alt": 1412, "soil": "灌淤土", "herb": "甘草", "area": 45.0, "years": 4, "replicate": 3}, {"code": "G2-S03", "region": "G2", "region_name": "靖远", "lat": "36.42", "lon": "104.88", "alt": 1385, "soil": "灌淤土", "herb": "板蓝根", "area": 57.5, "years": 2, "replicate": 3}, {"code": "G3-S01", "region": "G3", "region_name": "华池", "lat": "36.45", "lon": "108.01", "alt": 1421, "soil": "黄绵土", "herb": "柴胡", "area": 32.5, "years": 7, "replicate": 3}, {"code": "G3-S02", "region": "G3", "region_name": "华池", "lat": "36.21", "lon": "107.86", "alt": 1352, "soil": "黄绵土", "herb": "黄芩", "area": 45.0, "years": 4, "replicate": 3}, {"code": "G3-S03", "region": "G3", "region_name": "华池", "lat": "36.68", "lon": "108.22", "alt": 1488, "soil": "黄绵土", "herb": "大黄", "area": 57.5, "years": 2, "replicate": 3}], "fin": [{"year": "2027（第 1 年）", "rev": {"政府及科研项目": 25, "检测服务": 18, "平台试点订阅": 15, "企业合作": 10}, "cost": {"采样与测序检测": 30, "平台研发（人力）": 40, "设备与差旅": 14, "市场与运营": 10}, "rev_total": 68, "cost_total": 94, "profit": -26}, {"year": "2028（第 2 年）", "rev": {"县域技术服务": 120, "平台订阅": 90, "检测服务": 45, "企业数据合作": 30}, "cost": {"采样与测序检测": 75, "平台研发（人力）": 70, "市场与运营": 40, "管理与财务": 30}, "rev_total": 285, "cost_total": 215, "profit": 70}, {"year": "2029（第 3 年）", "rev": {"县域技术服务": 300, "平台订阅": 260, "检测服务": 80, "数据与模型授权": 80}, "cost": {"采样与测序检测": 160, "平台研发（人力）": 120, "市场与运营": 110, "管理与财务": 80}, "rev_total": 720, "cost_total": 470, "profit": 250}], "fit": [{"region": "G1", "herb": "当归", "month": 1, "ai": 49.2, "t": 0.0, "ben": 0.191, "dis": 0.132}, {"region": "G1", "herb": "当归", "month": 2, "ai": 49.2, "t": 0.0, "ben": 0.191, "dis": 0.132}, {"region": "G1", "herb": "当归", "month": 3, "ai": 51.8, "t": 0.0, "ben": 0.238, "dis": 0.132}, {"region": "G1", "herb": "当归", "month": 4, "ai": 61.2, "t": 0.014, "ben": 0.409, "dis": 0.135}, {"region": "G1", "herb": "当归", "month": 5, "ai": 69.1, "t": 0.212, "ben": 0.609, "dis": 0.219}, {"region": "G1", "herb": "当归", "month": 6, "ai": 68.2, "t": 0.736, "ben": 0.774, "dis": 0.478}, {"region": "G1", "herb": "当归", "month": 7, "ai": 53.4, "t": 0.966, "ben": 0.758, "dis": 0.765}, {"region": "G1", "herb": "当归", "month": 8, "ai": 38.7, "t": 0.948, "ben": 0.591, "dis": 0.862}, {"region": "G1", "herb": "当归", "month": 9, "ai": 33.9, "t": 0.632, "ben": 0.411, "dis": 0.723}, {"region": "G1", "herb": "当归", "month": 10, "ai": 37.9, "t": 0.141, "ben": 0.288, "dis": 0.455}, {"region": "G1", "herb": "当归", "month": 11, "ai": 47.1, "t": 0.007, "ben": 0.229, "dis": 0.211}, {"region": "G1", "herb": "当归", "month": 12, "ai": 49.9, "t": 0.0, "ben": 0.202, "dis": 0.132}, {"region": "G1", "herb": "党参", "month": 1, "ai": 49.3, "t": 0.0, "ben": 0.191, "dis": 0.13}, {"region": "G1", "herb": "党参", "month": 2, "ai": 49.3, "t": 0.0, "ben": 0.191, "dis": 0.13}, {"region": "G1", "herb": "党参", "month": 3, "ai": 51.8, "t": 0.0, "ben": 0.236, "dis": 0.13}, {"region": "G1", "herb": "党参", "month": 4, "ai": 60.7, "t": 0.01, "ben": 0.398, "dis": 0.133}, {"region": "G1", "herb": "党参", "month": 5, "ai": 67.7, "t": 0.174, "ben": 0.595, "dis": 0.225}, {"region": "G1", "herb": "党参", "month": 6, "ai": 66.2, "t": 0.672, "ben": 0.771, "dis": 0.502}, {"region": "G1", "herb": "党参", "month": 7, "ai": 52.7, "t": 0.934, "ben": 0.769, "dis": 0.783}, {"region": "G1", "herb": "党参", "month": 8, "ai": 39.6, "t": 0.91, "ben": 0.612, "dis": 0.86}, {"region": "G1", "herb": "党参", "month": 9, "ai": 35.5, "t": 0.566, "ben": 0.431, "dis": 0.703}, {"region": "G1", "herb": "党参", "month": 10, "ai": 39.5, "t": 0.113, "ben": 0.296, "dis": 0.431}, {"region": "G1", "herb": "党参", "month": 11, "ai": 47.7, "t": 0.005, "ben": 0.227, "dis": 0.197}, {"region": "G1", "herb": "党参", "month": 12, "ai": 49.9, "t": 0.0, "ben": 0.202, "dis": 0.13}, {"region": "G1", "herb": "黄芪", "month": 1, "ai": 48.4, "t": 0.0, "ben": 0.177, "dis": 0.134}, {"region": "G1", "herb": "黄芪", "month": 2, "ai": 48.4, "t": 0.0, "ben": 0.177, "dis": 0.134}, {"region": "G1", "herb": "黄芪", "month": 3, "ai": 50.3, "t": 0.0, "ben": 0.213, "dis": 0.134}, {"region": "G1", "herb": "黄芪", "month": 4, "ai": 57.4, "t": 0.011, "ben": 0.343, "dis": 0.138}, {"region": "G1", "herb": "黄芪", "month": 5, "ai": 65.3, "t": 0.152, "ben": 0.578, "dis": 0.249}, {"region": "G1", "herb": "黄芪", "month": 6, "ai": 63.8, "t": 0.588, "ben": 0.79, "dis": 0.551}, {"region": "G1", "herb": "黄芪", "month": 7, "ai": 53.0, "t": 0.862, "ben": 0.817, "dis": 0.815}, {"region": "G1", "herb": "黄芪", "month": 8, "ai": 42.4, "t": 0.832, "ben": 0.665, "dis": 0.851}, {"region": "G1", "herb": "黄芪", "month": 9, "ai": 38.4, "t": 0.491, "ben": 0.449, "dis": 0.658}, {"region": "G1", "herb": "黄芪", "month": 10, "ai": 39.9, "t": 0.101, "ben": 0.262, "dis": 0.387}, {"region": "G1", "herb": "黄芪", "month": 11, "ai": 47.3, "t": 0.006, "ben": 0.205, "dis": 0.181}, {"region": "G1", "herb": "黄芪", "month": 12, "ai": 48.8, "t": 0.0, "ben": 0.185, "dis": 0.134}, {"region": "G1", "herb": "甘草", "month": 1, "ai": 46.7, "t": 0.0, "ben": 0.17, "dis": 0.157}, {"region": "G1", "herb": "甘草", "month": 2, "ai": 46.7, "t": 0.0, "ben": 0.17, "dis": 0.157}, {"region": "G1", "herb": "甘草", "month": 3, "ai": 49.0, "t": 0.0, "ben": 0.211, "dis": 0.157}, {"region": "G1", "herb": "甘草", "month": 4, "ai": 56.2, "t": 0.004, "ben": 0.345, "dis": 0.16}, {"region": "G1", "herb": "甘草", "month": 5, "ai": 65.6, "t": 0.056, "ben": 0.598, "dis": 0.249}, {"region": "G1", "herb": "甘草", "month": 6, "ai": 62.6, "t": 0.274, "ben": 0.812, "dis": 0.551}, {"region": "G1", "herb": "甘草", "month": 7, "ai": 50.5, "t": 0.496, "ben": 0.835, "dis": 0.825}, {"region": "G1", "herb": "甘草", "month": 8, "ai": 38.3, "t": 0.465, "ben": 0.669, "dis": 0.876}, {"region": "G1", "herb": "甘草", "month": 9, "ai": 33.4, "t": 0.216, "ben": 0.429, "dis": 0.69}, {"region": "G1", "herb": "甘草", "month": 10, "ai": 36.4, "t": 0.036, "ben": 0.224, "dis": 0.403}, {"region": "G1", "herb": "甘草", "month": 11, "ai": 44.8, "t": 0.002, "ben": 0.17, "dis": 0.193}, {"region": "G1", "herb": "甘草", "month": 12, "ai": 46.7, "t": 0.0, "ben": 0.17, "dis": 0.157}, {"region": "G1", "herb": "柴胡", "month": 1, "ai": 48.6, "t": 0.0, "ben": 0.194, "dis": 0.147}, {"region": "G1", "herb": "柴胡", "month": 2, "ai": 48.6, "t": 0.0, "ben": 0.194, "dis": 0.147}, {"region": "G1", "herb": "柴胡", "month": 3, "ai": 51.3, "t": 0.001, "ben": 0.243, "dis": 0.147}, {"region": "G1", "herb": "柴胡", "month": 4, "ai": 60.8, "t": 0.026, "ben": 0.415, "dis": 0.15}, {"region": "G1", "herb": "柴胡", "month": 5, "ai": 68.4, "t": 0.262, "ben": 0.613, "dis": 0.244}, {"region": "G1", "herb": "柴胡", "month": 6, "ai": 65.8, "t": 0.768, "ben": 0.777, "dis": 0.529}, {"region": "G1", "herb": "柴胡", "month": 7, "ai": 51.4, "t": 0.971, "ben": 0.762, "dis": 0.804}, {"region": "G1", "herb": "柴胡", "month": 8, "ai": 39.0, "t": 0.955, "ben": 0.598, "dis": 0.865}, {"region": "G1", "herb": "柴胡", "month": 9, "ai": 36.6, "t": 0.674, "ben": 0.423, "dis": 0.692}, {"region": "G1", "herb": "柴胡", "month": 10, "ai": 40.9, "t": 0.185, "ben": 0.298, "dis": 0.417}, {"region": "G1", "herb": "柴胡", "month": 11, "ai": 47.9, "t": 0.015, "ben": 0.231, "dis": 0.199}, {"region": "G1", "herb": "柴胡", "month": 12, "ai": 49.2, "t": 0.001, "ben": 0.205, "dis": 0.147}, {"region": "G1", "herb": "大黄", "month": 1, "ai": 49.0, "t": 0.0, "ben": 0.198, "dis": 0.144}, {"region": "G1", "herb": "大黄", "month": 2, "ai": 49.0, "t": 0.0, "ben": 0.198, "dis": 0.144}, {"region": "G1", "herb": "大黄", "month": 3, "ai": 51.7, "t": 0.001, "ben": 0.248, "dis": 0.144}, {"region": "G1", "herb": "大黄", "month": 4, "ai": 61.3, "t": 0.037, "ben": 0.42, "dis": 0.147}, {"region": "G1", "herb": "大黄", "month": 5, "ai": 70.8, "t": 0.418, "ben": 0.617, "dis": 0.227}, {"region": "G1", "herb": "大黄", "month": 6, "ai": 69.6, "t": 0.967, "ben": 0.78, "dis": 0.491}, {"region": "G1", "herb": "大黄", "month": 7, "ai": 52.8, "t": 0.954, "ben": 0.763, "dis": 0.778}, {"region": "G1", "herb": "大黄", "month": 8, "ai": 39.1, "t": 0.973, "ben": 0.603, "dis": 0.87}, {"region": "G1", "herb": "大黄", "month": 9, "ai": 37.4, "t": 0.905, "ben": 0.436, "dis": 0.725}, {"region": "G1", "herb": "大黄", "month": 10, "ai": 40.6, "t": 0.298, "ben": 0.31, "dis": 0.451}, {"region": "G1", "herb": "大黄", "month": 11, "ai": 47.6, "t": 0.02, "ben": 0.239, "dis": 0.213}, {"region": "G1", "herb": "大黄", "month": 12, "ai": 49.6, "t": 0.001, "ben": 0.21, "dis": 0.144}, {"region": "G1", "herb": "黄芩", "month": 1, "ai": 48.9, "t": 0.0, "ben": 0.199, "dis": 0.147}, {"region": "G1", "herb": "黄芩", "month": 2, "ai": 48.9, "t": 0.0, "ben": 0.199, "dis": 0.147}, {"region": "G1", "herb": "黄芩", "month": 3, "ai": 51.6, "t": 0.001, "ben": 0.248, "dis": 0.147}, {"region": "G1", "herb": "黄芩", "month": 4, "ai": 61.4, "t": 0.011, "ben": 0.427, "dis": 0.15}, {"region": "G1", "herb": "黄芩", "month": 5, "ai": 68.0, "t": 0.136, "ben": 0.628, "dis": 0.247}, {"region": "G1", "herb": "黄芩", "month": 6, "ai": 63.5, "t": 0.516, "ben": 0.784, "dis": 0.54}, {"region": "G1", "herb": "黄芩", "month": 7, "ai": 49.2, "t": 0.784, "ben": 0.757, "dis": 0.812}, {"region": "G1", "herb": "黄芩", "month": 8, "ai": 36.9, "t": 0.752, "ben": 0.59, "dis": 0.864}, {"region": "G1", "herb": "黄芩", "month": 9, "ai": 35.1, "t": 0.429, "ben": 0.422, "dis": 0.683}, {"region": "G1", "herb": "黄芩", "month": 10, "ai": 41.3, "t": 0.091, "ben": 0.307, "dis": 0.406}, {"region": "G1", "herb": "黄芩", "month": 11, "ai": 48.7, "t": 0.006, "ben": 0.242, "dis": 0.194}, {"region": "G1", "herb": "黄芩", "month": 12, "ai": 49.6, "t": 0.0, "ben": 0.211, "dis": 0.147}, {"region": "G1", "herb": "半夏", "month": 1, "ai": 49.5, "t": 0.0, "ben": 0.192, "dis": 0.129}, {"region": "G1", "herb": "半夏", "month": 2, "ai": 49.5, "t": 0.0, "ben": 0.192, "dis": 0.129}, {"region": "G1", "herb": "半夏", "month": 3, "ai": 52.3, "t": 0.0, "ben": 0.243, "dis": 0.129}, {"region": "G1", "herb": "半夏", "month": 4, "ai": 62.0, "t": 0.004, "ben": 0.423, "dis": 0.132}, {"region": "G1", "herb": "半夏", "month": 5, "ai": 68.4, "t": 0.148, "ben": 0.623, "dis": 0.238}, {"region": "G1", "herb": "半夏", "month": 6, "ai": 66.3, "t": 0.728, "ben": 0.778, "dis": 0.515}, {"region": "G1", "herb": "半夏", "month": 7, "ai": 51.9, "t": 0.984, "ben": 0.751, "dis": 0.787}, {"region": "G1", "herb": "半夏", "month": 8, "ai": 38.8, "t": 0.967, "ben": 0.576, "dis": 0.847}, {"region": "G1", "herb": "半夏", "month": 9, "ai": 35.3, "t": 0.605, "ben": 0.398, "dis": 0.68}, {"region": "G1", "herb": "半夏", "month": 10, "ai": 39.3, "t": 0.087, "ben": 0.283, "dis": 0.418}, {"region": "G1", "herb": "半夏", "month": 11, "ai": 47.8, "t": 0.002, "ben": 0.228, "dis": 0.196}, {"region": "G1", "herb": "半夏", "month": 12, "ai": 50.1, "t": 0.0, "ben": 0.203, "dis": 0.129}, {"region": "G1", "herb": "枸杞", "month": 1, "ai": 48.3, "t": 0.0, "ben": 0.196, "dis": 0.155}, {"region": "G1", "herb": "枸杞", "month": 2, "ai": 48.3, "t": 0.0, "ben": 0.196, "dis": 0.155}, {"region": "G1", "herb": "枸杞", "month": 3, "ai": 50.9, "t": 0.0, "ben": 0.244, "dis": 0.155}, {"region": "G1", "herb": "枸杞", "month": 4, "ai": 59.9, "t": 0.004, "ben": 0.41, "dis": 0.158}, {"region": "G1", "herb": "枸杞", "month": 5, "ai": 66.1, "t": 0.056, "ben": 0.606, "dis": 0.248}, {"region": "G1", "herb": "枸杞", "month": 6, "ai": 60.4, "t": 0.274, "ben": 0.776, "dis": 0.554}, {"region": "G1", "herb": "枸杞", "month": 7, "ai": 46.6, "t": 0.496, "ben": 0.767, "dis": 0.828}, {"region": "G1", "herb": "枸杞", "month": 8, "ai": 35.1, "t": 0.465, "ben": 0.611, "dis": 0.877}, {"region": "G1", "herb": "枸杞", "month": 9, "ai": 34.2, "t": 0.216, "ben": 0.441, "dis": 0.687}, {"region": "G1", "herb": "枸杞", "month": 10, "ai": 41.3, "t": 0.036, "ben": 0.309, "dis": 0.399}, {"region": "G1", "herb": "枸杞", "month": 11, "ai": 48.6, "t": 0.002, "ben": 0.236, "dis": 0.189}, {"region": "G1", "herb": "枸杞", "month": 12, "ai": 48.9, "t": 0.0, "ben": 0.208, "dis": 0.155}, {"region": "G1", "herb": "板蓝根", "month": 1, "ai": 48.8, "t": 0.0, "ben": 0.194, "dis": 0.144}, {"region": "G1", "herb": "板蓝根", "month": 2, "ai": 48.8, "t": 0.0, "ben": 0.194, "dis": 0.144}, {"region": "G1", "herb": "板蓝根", "month": 3, "ai": 51.4, "t": 0.001, "ben": 0.241, "dis": 0.144}, {"region": "G1", "herb": "板蓝根", "month": 4, "ai": 60.8, "t": 0.019, "ben": 0.414, "dis": 0.147}, {"region": "G1", "herb": "板蓝根", "month": 5, "ai": 67.6, "t": 0.194, "ben": 0.614, "dis": 0.249}, {"region": "G1", "herb": "板蓝根", "month": 6, "ai": 63.2, "t": 0.63, "ben": 0.778, "dis": 0.557}, {"region": "G1", "herb": "板蓝根", "month": 7, "ai": 49.5, "t": 0.878, "ben": 0.762, "dis": 0.825}, {"region": "G1", "herb": "板蓝根", "month": 8, "ai": 38.2, "t": 0.852, "ben": 0.597, "dis": 0.864}, {"region": "G1", "herb": "板蓝根", "month": 9, "ai": 36.6, "t": 0.539, "ben": 0.42, "dis": 0.669}, {"region": "G1", "herb": "板蓝根", "month": 10, "ai": 42.1, "t": 0.136, "ben": 0.297, "dis": 0.388}, {"region": "G1", "herb": "板蓝根", "month": 11, "ai": 48.9, "t": 0.011, "ben": 0.232, "dis": 0.181}, {"region": "G1", "herb": "板蓝根", "month": 12, "ai": 49.4, "t": 0.001, "ben": 0.205, "dis": 0.144}, {"region": "G2", "herb": "当归", "month": 1, "ai": 49.9, "t": 0.0, "ben": 0.172, "dis": 0.1}, {"region": "G2", "herb": "当归", "month": 2, "ai": 49.9, "t": 0.0, "ben": 0.172, "dis": 0.1}, {"region": "G2", "herb": "当归", "month": 3, "ai": 52.5, "t": 0.0, "ben": 0.219, "dis": 0.1}, {"region": "G2", "herb": "当归", "month": 4, "ai": 61.9, "t": 0.016, "ben": 0.39, "dis": 0.103}, {"region": "G2", "herb": "当归", "month": 5, "ai": 71.1, "t": 0.451, "ben": 0.568, "dis": 0.177}, {"region": "G2", "herb": "当归", "month": 6, "ai": 72.5, "t": 0.998, "ben": 0.684, "dis": 0.347}, {"region": "G2", "herb": "当归", "month": 7, "ai": 59.0, "t": 0.723, "ben": 0.638, "dis": 0.506}, {"region": "G2", "herb": "当归", "month": 8, "ai": 49.3, "t": 0.773, "ben": 0.477, "dis": 0.529}, {"region": "G2", "herb": "当归", "month": 9, "ai": 49.3, "t": 0.988, "ben": 0.332, "dis": 0.416}, {"region": "G2", "herb": "当归", "month": 10, "ai": 47.8, "t": 0.283, "ben": 0.253, "dis": 0.262}, {"region": "G2", "herb": "当归", "month": 11, "ai": 50.0, "t": 0.006, "ben": 0.21, "dis": 0.139}, {"region": "G2", "herb": "当归", "month": 12, "ai": 50.5, "t": 0.0, "ben": 0.183, "dis": 0.1}, {"region": "G2", "herb": "党参", "month": 1, "ai": 49.8, "t": 0.0, "ben": 0.169, "dis": 0.101}, {"region": "G2", "herb": "党参", "month": 2, "ai": 49.8, "t": 0.0, "ben": 0.169, "dis": 0.101}, {"region": "G2", "herb": "党参", "month": 3, "ai": 52.2, "t": 0.0, "ben": 0.213, "dis": 0.101}, {"region": "G2", "herb": "党参", "month": 4, "ai": 61.1, "t": 0.012, "ben": 0.376, "dis": 0.104}, {"region": "G2", "herb": "党参", "month": 5, "ai": 69.3, "t": 0.391, "ben": 0.55, "dis": 0.184}, {"region": "G2", "herb": "党参", "month": 6, "ai": 70.9, "t": 0.999, "ben": 0.671, "dis": 0.364}, {"region": "G2", "herb": "党参", "month": 7, "ai": 58.6, "t": 0.785, "ben": 0.636, "dis": 0.52}, {"region": "G2", "herb": "党参", "month": 8, "ai": 50.1, "t": 0.831, "ben": 0.484, "dis": 0.53}, {"region": "G2", "herb": "党参", "month": 9, "ai": 50.2, "t": 0.966, "ben": 0.341, "dis": 0.405}, {"region": "G2", "herb": "党参", "month": 10, "ai": 48.2, "t": 0.237, "ben": 0.254, "dis": 0.249}, {"region": "G2", "herb": "党参", "month": 11, "ai": 50.0, "t": 0.004, "ben": 0.205, "dis": 0.133}, {"region": "G2", "herb": "党参", "month": 12, "ai": 50.3, "t": 0.0, "ben": 0.18, "dis": 0.101}, {"region": "G2", "herb": "黄芪", "month": 1, "ai": 48.7, "t": 0.0, "ben": 0.159, "dis": 0.11}, {"region": "G2", "herb": "黄芪", "month": 2, "ai": 48.7, "t": 0.0, "ben": 0.159, "dis": 0.11}, {"region": "G2", "herb": "黄芪", "month": 3, "ai": 50.7, "t": 0.0, "ben": 0.195, "dis": 0.11}, {"region": "G2", "herb": "黄芪", "month": 4, "ai": 57.7, "t": 0.012, "ben": 0.325, "dis": 0.114}, {"region": "G2", "herb": "黄芪", "month": 5, "ai": 66.7, "t": 0.337, "ben": 0.541, "dis": 0.214}, {"region": "G2", "herb": "黄芪", "month": 6, "ai": 69.5, "t": 0.971, "ben": 0.71, "dis": 0.424}, {"region": "G2", "herb": "黄芪", "month": 7, "ai": 60.4, "t": 0.906, "ben": 0.71, "dis": 0.58}, {"region": "G2", "herb": "黄芪", "month": 8, "ai": 53.4, "t": 0.936, "ben": 0.56, "dis": 0.563}, {"region": "G2", "herb": "黄芪", "month": 9, "ai": 51.6, "t": 0.906, "ben": 0.374, "dis": 0.404}, {"region": "G2", "herb": "黄芪", "month": 10, "ai": 47.0, "t": 0.206, "ben": 0.227, "dis": 0.239}, {"region": "G2", "herb": "黄芪", "month": 11, "ai": 49.0, "t": 0.005, "ben": 0.186, "dis": 0.133}, {"region": "G2", "herb": "黄芪", "month": 12, "ai": 49.1, "t": 0.0, "ben": 0.167, "dis": 0.11}, {"region": "G2", "herb": "甘草", "month": 1, "ai": 46.9, "t": 0.0, "ben": 0.153, "dis": 0.136}, {"region": "G2", "herb": "甘草", "month": 2, "ai": 46.9, "t": 0.0, "ben": 0.153, "dis": 0.136}, {"region": "G2", "herb": "甘草", "month": 3, "ai": 49.2, "t": 0.0, "ben": 0.194, "dis": 0.136}, {"region": "G2", "herb": "甘草", "month": 4, "ai": 56.4, "t": 0.004, "ben": 0.328, "dis": 0.139}, {"region": "G2", "herb": "甘草", "month": 5, "ai": 66.3, "t": 0.136, "ben": 0.568, "dis": 0.218}, {"region": "G2", "herb": "甘草", "month": 6, "ai": 68.5, "t": 0.655, "ben": 0.747, "dis": 0.433}, {"region": "G2", "herb": "甘草", "month": 7, "ai": 61.1, "t": 0.951, "ben": 0.748, "dis": 0.611}, {"region": "G2", "herb": "甘草", "month": 8, "ai": 51.3, "t": 0.927, "ben": 0.58, "dis": 0.619}, {"region": "G2", "herb": "甘草", "month": 9, "ai": 44.4, "t": 0.548, "ben": 0.358, "dis": 0.467}, {"region": "G2", "herb": "甘草", "month": 10, "ai": 41.7, "t": 0.077, "ben": 0.187, "dis": 0.277}, {"region": "G2", "herb": "甘草", "month": 11, "ai": 46.0, "t": 0.002, "ben": 0.153, "dis": 0.154}, {"region": "G2", "herb": "甘草", "month": 12, "ai": 46.9, "t": 0.0, "ben": 0.153, "dis": 0.136}, {"region": "G2", "herb": "柴胡", "month": 1, "ai": 48.8, "t": 0.0, "ben": 0.174, "dis": 0.123}, {"region": "G2", "herb": "柴胡", "month": 2, "ai": 48.8, "t": 0.0, "ben": 0.174, "dis": 0.123}, {"region": "G2", "herb": "柴胡", "month": 3, "ai": 51.5, "t": 0.0, "ben": 0.222, "dis": 0.123}, {"region": "G2", "herb": "柴胡", "month": 4, "ai": 61.0, "t": 0.029, "ben": 0.394, "dis": 0.126}, {"region": "G2", "herb": "柴胡", "month": 5, "ai": 69.9, "t": 0.503, "ben": 0.571, "dis": 0.21}, {"region": "G2", "herb": "柴胡", "month": 6, "ai": 69.0, "t": 0.998, "ben": 0.685, "dis": 0.412}, {"region": "G2", "herb": "柴胡", "month": 7, "ai": 55.1, "t": 0.756, "ben": 0.638, "dis": 0.583}, {"region": "G2", "herb": "柴胡", "month": 8, "ai": 46.3, "t": 0.801, "ben": 0.478, "dis": 0.589}, {"region": "G2", "herb": "柴胡", "month": 9, "ai": 48.1, "t": 0.99, "ben": 0.338, "dis": 0.444}, {"region": "G2", "herb": "柴胡", "month": 10, "ai": 48.2, "t": 0.337, "ben": 0.258, "dis": 0.268}, {"region": "G2", "herb": "柴胡", "month": 11, "ai": 49.5, "t": 0.012, "ben": 0.211, "dis": 0.148}, {"region": "G2", "herb": "柴胡", "month": 12, "ai": 49.4, "t": 0.0, "ben": 0.184, "dis": 0.123}, {"region": "G2", "herb": "大黄", "month": 1, "ai": 49.4, "t": 0.0, "ben": 0.177, "dis": 0.116}, {"region": "G2", "herb": "大黄", "month": 2, "ai": 49.4, "t": 0.0, "ben": 0.177, "dis": 0.116}, {"region": "G2", "herb": "大黄", "month": 3, "ai": 52.1, "t": 0.0, "ben": 0.227, "dis": 0.116}, {"region": "G2", "herb": "大黄", "month": 4, "ai": 61.7, "t": 0.042, "ben": 0.398, "dis": 0.118}, {"region": "G2", "herb": "大黄", "month": 5, "ai": 73.1, "t": 0.739, "ben": 0.574, "dis": 0.189}, {"region": "G2", "herb": "大黄", "month": 6, "ai": 69.8, "t": 0.804, "ben": 0.686, "dis": 0.37}, {"region": "G2", "herb": "大黄", "month": 7, "ai": 54.1, "t": 0.344, "ben": 0.637, "dis": 0.541}, {"region": "G2", "herb": "大黄", "month": 8, "ai": 44.4, "t": 0.393, "ben": 0.481, "dis": 0.567}, {"region": "G2", "herb": "大黄", "month": 9, "ai": 47.9, "t": 0.914, "ben": 0.348, "dis": 0.446}, {"region": "G2", "herb": "大黄", "month": 10, "ai": 49.7, "t": 0.527, "ben": 0.269, "dis": 0.278}, {"region": "G2", "herb": "大黄", "month": 11, "ai": 49.9, "t": 0.016, "ben": 0.217, "dis": 0.15}, {"region": "G2", "herb": "大黄", "month": 12, "ai": 50.0, "t": 0.0, "ben": 0.189, "dis": 0.116}, {"region": "G2", "herb": "黄芩", "month": 1, "ai": 49.1, "t": 0.0, "ben": 0.179, "dis": 0.123}, {"region": "G2", "herb": "黄芩", "month": 2, "ai": 49.1, "t": 0.0, "ben": 0.179, "dis": 0.123}, {"region": "G2", "herb": "黄芩", "month": 3, "ai": 51.8, "t": 0.0, "ben": 0.229, "dis": 0.123}, {"region": "G2", "herb": "黄芩", "month": 4, "ai": 61.6, "t": 0.012, "ben": 0.408, "dis": 0.127}, {"region": "G2", "herb": "黄芩", "month": 5, "ai": 69.0, "t": 0.294, "ben": 0.589, "dis": 0.214}, {"region": "G2", "herb": "黄芩", "month": 6, "ai": 68.5, "t": 0.918, "ben": 0.698, "dis": 0.422}, {"region": "G2", "herb": "黄芩", "month": 7, "ai": 56.6, "t": 0.975, "ben": 0.642, "dis": 0.591}, {"region": "G2", "herb": "黄芩", "month": 8, "ai": 47.7, "t": 0.989, "ben": 0.478, "dis": 0.591}, {"region": "G2", "herb": "黄芩", "month": 9, "ai": 47.3, "t": 0.834, "ben": 0.344, "dis": 0.441}, {"region": "G2", "herb": "黄芩", "month": 10, "ai": 47.9, "t": 0.181, "ben": 0.271, "dis": 0.264}, {"region": "G2", "herb": "黄芩", "month": 11, "ai": 50.3, "t": 0.005, "ben": 0.223, "dis": 0.146}, {"region": "G2", "herb": "黄芩", "month": 12, "ai": 49.8, "t": 0.0, "ben": 0.192, "dis": 0.123}, {"region": "G2", "herb": "半夏", "month": 1, "ai": 50.1, "t": 0.0, "ben": 0.174, "dis": 0.1}, {"region": "G2", "herb": "半夏", "month": 2, "ai": 50.1, "t": 0.0, "ben": 0.174, "dis": 0.1}, {"region": "G2", "herb": "半夏", "month": 3, "ai": 52.9, "t": 0.0, "ben": 0.225, "dis": 0.1}, {"region": "G2", "herb": "半夏", "month": 4, "ai": 62.6, "t": 0.005, "ben": 0.405, "dis": 0.104}, {"region": "G2", "herb": "半夏", "month": 5, "ai": 70.4, "t": 0.395, "ben": 0.585, "dis": 0.199}, {"region": "G2", "herb": "半夏", "month": 6, "ai": 70.6, "t": 0.979, "ben": 0.694, "dis": 0.39}, {"region": "G2", "herb": "半夏", "month": 7, "ai": 55.7, "t": 0.558, "ben": 0.639, "dis": 0.543}, {"region": "G2", "herb": "半夏", "month": 8, "ai": 47.2, "t": 0.62, "ben": 0.469, "dis": 0.538}, {"region": "G2", "herb": "半夏", "month": 9, "ai": 50.0, "t": 0.999, "ben": 0.325, "dis": 0.398}, {"region": "G2", "herb": "半夏", "month": 10, "ai": 48.2, "t": 0.217, "ben": 0.251, "dis": 0.243}, {"region": "G2", "herb": "半夏", "month": 11, "ai": 50.3, "t": 0.001, "ben": 0.21, "dis": 0.133}, {"region": "G2", "herb": "半夏", "month": 12, "ai": 50.7, "t": 0.0, "ben": 0.185, "dis": 0.1}, {"region": "G2", "herb": "枸杞", "month": 1, "ai": 48.2, "t": 0.0, "ben": 0.174, "dis": 0.135}, {"region": "G2", "herb": "枸杞", "month": 2, "ai": 48.2, "t": 0.0, "ben": 0.174, "dis": 0.135}, {"region": "G2", "herb": "枸杞", "month": 3, "ai": 50.8, "t": 0.0, "ben": 0.222, "dis": 0.135}, {"region": "G2", "herb": "枸杞", "month": 4, "ai": 59.8, "t": 0.004, "ben": 0.388, "dis": 0.137}, {"region": "G2", "herb": "枸杞", "month": 5, "ai": 66.0, "t": 0.136, "ben": 0.561, "dis": 0.217}, {"region": "G2", "herb": "枸杞", "month": 6, "ai": 64.7, "t": 0.655, "ben": 0.677, "dis": 0.432}, {"region": "G2", "herb": "枸杞", "month": 7, "ai": 55.1, "t": 0.951, "ben": 0.635, "dis": 0.608}, {"region": "G2", "herb": "枸杞", "month": 8, "ai": 46.3, "t": 0.927, "ben": 0.483, "dis": 0.613}, {"region": "G2", "herb": "枸杞", "month": 9, "ai": 44.2, "t": 0.548, "ben": 0.349, "dis": 0.461}, {"region": "G2", "herb": "枸杞", "month": 10, "ai": 46.3, "t": 0.077, "ben": 0.266, "dis": 0.272}, {"region": "G2", "herb": "枸杞", "month": 11, "ai": 49.4, "t": 0.002, "ben": 0.213, "dis": 0.151}, {"region": "G2", "herb": "枸杞", "month": 12, "ai": 48.8, "t": 0.0, "ben": 0.185, "dis": 0.135}, {"region": "G2", "herb": "板蓝根", "month": 1, "ai": 48.9, "t": 0.0, "ben": 0.174, "dis": 0.122}, {"region": "G2", "herb": "板蓝根", "month": 2, "ai": 48.9, "t": 0.0, "ben": 0.174, "dis": 0.122}, {"region": "G2", "herb": "板蓝根", "month": 3, "ai": 51.4, "t": 0.0, "ben": 0.221, "dis": 0.122}, {"region": "G2", "herb": "板蓝根", "month": 4, "ai": 61.0, "t": 0.021, "ben": 0.394, "dis": 0.125}, {"region": "G2", "herb": "板蓝根", "month": 5, "ai": 68.7, "t": 0.388, "ben": 0.573, "dis": 0.216}, {"region": "G2", "herb": "板蓝根", "month": 6, "ai": 68.0, "t": 0.975, "ben": 0.687, "dis": 0.429}, {"region": "G2", "herb": "板蓝根", "month": 7, "ai": 55.9, "t": 0.918, "ben": 0.64, "dis": 0.594}, {"region": "G2", "herb": "板蓝根", "month": 8, "ai": 47.7, "t": 0.944, "ben": 0.48, "dis": 0.585}, {"region": "G2", "herb": "板蓝根", "month": 9, "ai": 48.3, "t": 0.918, "ben": 0.337, "dis": 0.429}, {"region": "G2", "herb": "板蓝根", "month": 10, "ai": 48.4, "t": 0.252, "ben": 0.259, "dis": 0.252}, {"region": "G2", "herb": "板蓝根", "month": 11, "ai": 50.0, "t": 0.009, "ben": 0.212, "dis": 0.14}, {"region": "G2", "herb": "板蓝根", "month": 12, "ai": 49.5, "t": 0.0, "ben": 0.185, "dis": 0.122}, {"region": "G3", "herb": "当归", "month": 1, "ai": 49.2, "t": 0.0, "ben": 0.191, "dis": 0.132}, {"region": "G3", "herb": "当归", "month": 2, "ai": 49.2, "t": 0.0, "ben": 0.191, "dis": 0.132}, {"region": "G3", "herb": "当归", "month": 3, "ai": 51.8, "t": 0.0, "ben": 0.238, "dis": 0.132}, {"region": "G3", "herb": "当归", "month": 4, "ai": 61.2, "t": 0.012, "ben": 0.409, "dis": 0.135}, {"region": "G3", "herb": "当归", "month": 5, "ai": 69.8, "t": 0.283, "ben": 0.609, "dis": 0.217}, {"region": "G3", "herb": "当归", "month": 6, "ai": 71.0, "t": 0.918, "ben": 0.774, "dis": 0.453}, {"region": "G3", "herb": "当归", "month": 7, "ai": 55.8, "t": 0.977, "ben": 0.758, "dis": 0.721}, {"region": "G3", "herb": "当归", "month": 8, "ai": 41.7, "t": 0.988, "ben": 0.591, "dis": 0.813}, {"region": "G3", "herb": "当归", "month": 9, "ai": 37.5, "t": 0.831, "ben": 0.411, "dis": 0.686}, {"region": "G3", "herb": "当归", "month": 10, "ai": 39.1, "t": 0.181, "ben": 0.288, "dis": 0.439}, {"region": "G3", "herb": "当归", "month": 11, "ai": 47.1, "t": 0.005, "ben": 0.229, "dis": 0.211}, {"region": "G3", "herb": "当归", "month": 12, "ai": 49.9, "t": 0.0, "ben": 0.202, "dis": 0.132}, {"region": "G3", "herb": "党参", "month": 1, "ai": 49.3, "t": 0.0, "ben": 0.191, "dis": 0.13}, {"region": "G3", "herb": "党参", "month": 2, "ai": 49.3, "t": 0.0, "ben": 0.191, "dis": 0.13}, {"region": "G3", "herb": "党参", "month": 3, "ai": 51.8, "t": 0.0, "ben": 0.236, "dis": 0.13}, {"region": "G3", "herb": "党参", "month": 4, "ai": 60.6, "t": 0.008, "ben": 0.398, "dis": 0.133}, {"region": "G3", "herb": "党参", "month": 5, "ai": 68.4, "t": 0.237, "ben": 0.595, "dis": 0.223}, {"region": "G3", "herb": "党参", "month": 6, "ai": 69.3, "t": 0.873, "ben": 0.771, "dis": 0.474}, {"region": "G3", "herb": "党参", "month": 7, "ai": 55.8, "t": 0.994, "ben": 0.769, "dis": 0.735}, {"region": "G3", "herb": "党参", "month": 8, "ai": 43.3, "t": 0.999, "ben": 0.612, "dis": 0.806}, {"region": "G3", "herb": "党参", "month": 9, "ai": 39.5, "t": 0.773, "ben": 0.431, "dis": 0.662}, {"region": "G3", "herb": "党参", "month": 10, "ai": 40.7, "t": 0.147, "ben": 0.296, "dis": 0.413}, {"region": "G3", "herb": "党参", "month": 11, "ai": 47.7, "t": 0.004, "ben": 0.227, "dis": 0.197}, {"region": "G3", "herb": "党参", "month": 12, "ai": 49.9, "t": 0.0, "ben": 0.202, "dis": 0.13}, {"region": "G3", "herb": "黄芪", "month": 1, "ai": 48.4, "t": 0.0, "ben": 0.177, "dis": 0.134}, {"region": "G3", "herb": "黄芪", "month": 2, "ai": 48.4, "t": 0.0, "ben": 0.177, "dis": 0.134}, {"region": "G3", "herb": "黄芪", "month": 3, "ai": 50.3, "t": 0.0, "ben": 0.213, "dis": 0.134}, {"region": "G3", "herb": "黄芪", "month": 4, "ai": 57.4, "t": 0.009, "ben": 0.343, "dis": 0.138}, {"region": "G3", "herb": "黄芪", "month": 5, "ai": 65.8, "t": 0.206, "ben": 0.578, "dis": 0.247}, {"region": "G3", "herb": "黄芪", "month": 6, "ai": 66.9, "t": 0.79, "ben": 0.79, "dis": 0.525}, {"region": "G3", "herb": "黄芪", "month": 7, "ai": 56.6, "t": 0.995, "ben": 0.817, "dis": 0.769}, {"region": "G3", "herb": "黄芪", "month": 8, "ai": 46.5, "t": 0.987, "ben": 0.665, "dis": 0.799}, {"region": "G3", "herb": "黄芪", "month": 9, "ai": 42.2, "t": 0.686, "ben": 0.449, "dis": 0.618}, {"region": "G3", "herb": "黄芪", "month": 10, "ai": 41.1, "t": 0.13, "ben": 0.262, "dis": 0.37}, {"region": "G3", "herb": "黄芪", "month": 11, "ai": 47.3, "t": 0.004, "ben": 0.205, "dis": 0.181}, {"region": "G3", "herb": "黄芪", "month": 12, "ai": 48.8, "t": 0.0, "ben": 0.185, "dis": 0.134}, {"region": "G3", "herb": "甘草", "month": 1, "ai": 46.7, "t": 0.0, "ben": 0.17, "dis": 0.157}, {"region": "G3", "herb": "甘草", "month": 2, "ai": 46.7, "t": 0.0, "ben": 0.17, "dis": 0.157}, {"region": "G3", "herb": "甘草", "month": 3, "ai": 49.0, "t": 0.0, "ben": 0.211, "dis": 0.157}, {"region": "G3", "herb": "甘草", "month": 4, "ai": 56.2, "t": 0.003, "ben": 0.345, "dis": 0.16}, {"region": "G3", "herb": "甘草", "month": 5, "ai": 65.9, "t": 0.077, "ben": 0.598, "dis": 0.247}, {"region": "G3", "herb": "甘草", "month": 6, "ai": 65.2, "t": 0.425, "ben": 0.812, "dis": 0.525}, {"region": "G3", "herb": "甘草", "month": 7, "ai": 54.8, "t": 0.729, "ben": 0.835, "dis": 0.781}, {"region": "G3", "herb": "甘草", "month": 8, "ai": 42.9, "t": 0.698, "ben": 0.669, "dis": 0.827}, {"region": "G3", "herb": "甘草", "month": 9, "ai": 36.5, "t": 0.341, "ben": 0.429, "dis": 0.652}, {"region": "G3", "herb": "甘草", "month": 10, "ai": 37.4, "t": 0.047, "ben": 0.224, "dis": 0.387}, {"region": "G3", "herb": "甘草", "month": 11, "ai": 44.8, "t": 0.001, "ben": 0.17, "dis": 0.193}, {"region": "G3", "herb": "甘草", "month": 12, "ai": 46.7, "t": 0.0, "ben": 0.17, "dis": 0.157}, {"region": "G3", "herb": "柴胡", "month": 1, "ai": 48.6, "t": 0.0, "ben": 0.194, "dis": 0.147}, {"region": "G3", "herb": "柴胡", "month": 2, "ai": 48.6, "t": 0.0, "ben": 0.194, "dis": 0.147}, {"region": "G3", "herb": "柴胡", "month": 3, "ai": 51.3, "t": 0.0, "ben": 0.243, "dis": 0.147}, {"region": "G3", "herb": "柴胡", "month": 4, "ai": 60.8, "t": 0.022, "ben": 0.415, "dis": 0.15}, {"region": "G3", "herb": "柴胡", "month": 5, "ai": 69.1, "t": 0.337, "ben": 0.613, "dis": 0.242}, {"region": "G3", "herb": "柴胡", "month": 6, "ai": 68.4, "t": 0.929, "ben": 0.777, "dis": 0.506}, {"region": "G3", "herb": "柴胡", "month": 7, "ai": 53.8, "t": 0.98, "ben": 0.762, "dis": 0.763}, {"region": "G3", "herb": "柴胡", "month": 8, "ai": 41.8, "t": 0.99, "ben": 0.598, "dis": 0.819}, {"region": "G3", "herb": "柴胡", "month": 9, "ai": 40.0, "t": 0.852, "ben": 0.423, "dis": 0.656}, {"region": "G3", "herb": "柴胡", "month": 10, "ai": 42.1, "t": 0.229, "ben": 0.298, "dis": 0.402}, {"region": "G3", "herb": "柴胡", "month": 11, "ai": 47.9, "t": 0.011, "ben": 0.231, "dis": 0.199}, {"region": "G3", "herb": "柴胡", "month": 12, "ai": 49.2, "t": 0.0, "ben": 0.205, "dis": 0.147}, {"region": "G3", "herb": "大黄", "month": 1, "ai": 49.0, "t": 0.0, "ben": 0.198, "dis": 0.144}, {"region": "G3", "herb": "大黄", "month": 2, "ai": 49.0, "t": 0.0, "ben": 0.198, "dis": 0.144}, {"region": "G3", "herb": "大黄", "month": 3, "ai": 51.7, "t": 0.0, "ben": 0.248, "dis": 0.144}, {"region": "G3", "herb": "大黄", "month": 4, "ai": 61.3, "t": 0.031, "ben": 0.42, "dis": 0.147}, {"region": "G3", "herb": "大黄", "month": 5, "ai": 71.8, "t": 0.527, "ben": 0.617, "dis": 0.225}, {"region": "G3", "herb": "大黄", "month": 6, "ai": 71.1, "t": 0.99, "ben": 0.78, "dis": 0.468}, {"region": "G3", "herb": "大黄", "month": 7, "ai": 53.1, "t": 0.712, "ben": 0.763, "dis": 0.737}, {"region": "G3", "herb": "大黄", "month": 8, "ai": 39.9, "t": 0.752, "ben": 0.603, "dis": 0.824}, {"region": "G3", "herb": "大黄", "month": 9, "ai": 40.0, "t": 0.998, "ben": 0.436, "dis": 0.689}, {"region": "G3", "herb": "大黄", "month": 10, "ai": 42.0, "t": 0.368, "ben": 0.31, "dis": 0.436}, {"region": "G3", "herb": "大黄", "month": 11, "ai": 47.5, "t": 0.014, "ben": 0.239, "dis": 0.213}, {"region": "G3", "herb": "大黄", "month": 12, "ai": 49.6, "t": 0.0, "ben": 0.21, "dis": 0.144}, {"region": "G3", "herb": "黄芩", "month": 1, "ai": 48.9, "t": 0.0, "ben": 0.199, "dis": 0.147}, {"region": "G3", "herb": "黄芩", "month": 2, "ai": 48.9, "t": 0.0, "ben": 0.199, "dis": 0.147}, {"region": "G3", "herb": "黄芩", "month": 3, "ai": 51.6, "t": 0.0, "ben": 0.248, "dis": 0.147}, {"region": "G3", "herb": "黄芩", "month": 4, "ai": 61.3, "t": 0.009, "ben": 0.427, "dis": 0.15}, {"region": "G3", "herb": "黄芩", "month": 5, "ai": 68.5, "t": 0.181, "ben": 0.628, "dis": 0.245}, {"region": "G3", "herb": "黄芩", "month": 6, "ai": 66.4, "t": 0.709, "ben": 0.784, "dis": 0.516}, {"region": "G3", "herb": "黄芩", "month": 7, "ai": 53.0, "t": 0.961, "ben": 0.757, "dis": 0.77}, {"region": "G3", "herb": "黄芩", "month": 8, "ai": 41.1, "t": 0.944, "ben": 0.59, "dis": 0.816}, {"region": "G3", "herb": "黄芩", "month": 9, "ai": 38.5, "t": 0.607, "ben": 0.422, "dis": 0.646}, {"region": "G3", "herb": "黄芩", "month": 10, "ai": 42.3, "t": 0.116, "ben": 0.307, "dis": 0.391}, {"region": "G3", "herb": "黄芩", "month": 11, "ai": 48.7, "t": 0.005, "ben": 0.242, "dis": 0.194}, {"region": "G3", "herb": "黄芩", "month": 12, "ai": 49.6, "t": 0.0, "ben": 0.211, "dis": 0.147}, {"region": "G3", "herb": "半夏", "month": 1, "ai": 49.5, "t": 0.0, "ben": 0.192, "dis": 0.129}, {"region": "G3", "herb": "半夏", "month": 2, "ai": 49.5, "t": 0.0, "ben": 0.192, "dis": 0.129}, {"region": "G3", "herb": "半夏", "month": 3, "ai": 52.3, "t": 0.0, "ben": 0.243, "dis": 0.129}, {"region": "G3", "herb": "半夏", "month": 4, "ai": 62.0, "t": 0.003, "ben": 0.423, "dis": 0.132}, {"region": "G3", "herb": "半夏", "month": 5, "ai": 69.1, "t": 0.217, "ben": 0.623, "dis": 0.235}, {"region": "G3", "herb": "半夏", "month": 6, "ai": 69.3, "t": 0.937, "ben": 0.778, "dis": 0.49}, {"region": "G3", "herb": "半夏", "month": 7, "ai": 53.8, "t": 0.928, "ben": 0.751, "dis": 0.744}, {"region": "G3", "herb": "半夏", "month": 8, "ai": 41.3, "t": 0.954, "ben": 0.576, "dis": 0.799}, {"region": "G3", "herb": "半夏", "month": 9, "ai": 39.2, "t": 0.84, "ben": 0.398, "dis": 0.643}, {"region": "G3", "herb": "半夏", "month": 10, "ai": 40.4, "t": 0.121, "ben": 0.283, "dis": 0.402}, {"region": "G3", "herb": "半夏", "month": 11, "ai": 47.8, "t": 0.001, "ben": 0.228, "dis": 0.196}, {"region": "G3", "herb": "半夏", "month": 12, "ai": 50.1, "t": 0.0, "ben": 0.203, "dis": 0.129}, {"region": "G3", "herb": "枸杞", "month": 1, "ai": 48.3, "t": 0.0, "ben": 0.196, "dis": 0.155}, {"region": "G3", "herb": "枸杞", "month": 2, "ai": 48.3, "t": 0.0, "ben": 0.196, "dis": 0.155}, {"region": "G3", "herb": "枸杞", "month": 3, "ai": 50.9, "t": 0.0, "ben": 0.244, "dis": 0.155}, {"region": "G3", "herb": "枸杞", "month": 4, "ai": 59.9, "t": 0.003, "ben": 0.41, "dis": 0.158}, {"region": "G3", "herb": "枸杞", "month": 5, "ai": 66.4, "t": 0.077, "ben": 0.606, "dis": 0.246}, {"region": "G3", "herb": "枸杞", "month": 6, "ai": 63.0, "t": 0.425, "ben": 0.776, "dis": 0.527}, {"region": "G3", "herb": "枸杞", "month": 7, "ai": 51.0, "t": 0.729, "ben": 0.767, "dis": 0.782}, {"region": "G3", "herb": "枸杞", "month": 8, "ai": 39.8, "t": 0.698, "ben": 0.611, "dis": 0.825}, {"region": "G3", "herb": "枸杞", "month": 9, "ai": 37.4, "t": 0.341, "ben": 0.441, "dis": 0.647}, {"region": "G3", "herb": "枸杞", "month": 10, "ai": 42.3, "t": 0.047, "ben": 0.309, "dis": 0.382}, {"region": "G3", "herb": "枸杞", "month": 11, "ai": 48.6, "t": 0.001, "ben": 0.236, "dis": 0.189}, {"region": "G3", "herb": "枸杞", "month": 12, "ai": 48.9, "t": 0.0, "ben": 0.208, "dis": 0.155}, {"region": "G3", "herb": "板蓝根", "month": 1, "ai": 48.8, "t": 0.0, "ben": 0.194, "dis": 0.144}, {"region": "G3", "herb": "板蓝根", "month": 2, "ai": 48.8, "t": 0.0, "ben": 0.194, "dis": 0.144}, {"region": "G3", "herb": "板蓝根", "month": 3, "ai": 51.4, "t": 0.0, "ben": 0.241, "dis": 0.144}, {"region": "G3", "herb": "板蓝根", "month": 4, "ai": 60.8, "t": 0.016, "ben": 0.414, "dis": 0.147}, {"region": "G3", "herb": "板蓝根", "month": 5, "ai": 68.2, "t": 0.252, "ben": 0.614, "dis": 0.246}, {"region": "G3", "herb": "板蓝根", "month": 6, "ai": 66.2, "t": 0.814, "ben": 0.778, "dis": 0.53}, {"region": "G3", "herb": "板蓝根", "month": 7, "ai": 53.1, "t": 0.996, "ben": 0.762, "dis": 0.778}, {"region": "G3", "herb": "板蓝根", "month": 8, "ai": 42.2, "t": 0.989, "ben": 0.597, "dis": 0.81}, {"region": "G3", "herb": "板蓝根", "month": 9, "ai": 40.4, "t": 0.72, "ben": 0.42, "dis": 0.627}, {"region": "G3", "herb": "板蓝根", "month": 10, "ai": 43.3, "t": 0.169, "ben": 0.297, "dis": 0.37}, {"region": "G3", "herb": "板蓝根", "month": 11, "ai": 48.9, "t": 0.008, "ben": 0.232, "dis": 0.181}, {"region": "G3", "herb": "板蓝根", "month": 12, "ai": 49.4, "t": 0.0, "ben": 0.205, "dis": 0.144}], "refs": [{"id": "L01", "journal": "Microbiome", "year": 2026, "pmid": "42343457", "doi": "10.1186/s40168-026-02453-2", "cn": "杨树—药用植物间作体系中根际微生物组装配与碳磷耦合的时序动态", "finding": "间作使胸径增 14.3%—15.33%；α多样性不变，β多样性随季节显著分异；frdC、phnH 等碳磷基因与叶片磷累积同步。", "use": "证明“群落随季节变化”真实存在（β 多样性层面）", "en": "Temporal dynamics of rhizosphere microbiome assembly and carbon-phosphorus coupling in poplar-medicinal plant intercropping systems"}, {"id": "L02", "journal": "Frontiers in Microbiology", "year": 2022, "pmid": "35432289", "doi": "10.3389/fmicb.2022.853077", "cn": "三七生命周期中根际群落的时序动态", "finding": "细菌、真菌群落主要由生育期驱动；α多样性先升后降，3 年根龄期变化最活跃，真菌节点增加。", "use": "α多样性“单峰”形态；病原真菌随龄期上升", "en": "Temporal dynamics of rhizosphere communities across the life cycle of Panax notoginseng"}, {"id": "L03", "journal": "Frontiers in Microbiology", "year": 2025, "pmid": "40703237", "doi": "10.3389/fmicb.2025.1628234", "cn": "土壤微生物失衡与根际代谢紊乱驱动党参连作障碍", "finding": "连作使党参产量降 40.47%、多糖降 29.4%；碳源利用效率下降；Flavobacterium、Pseudomonas、Burkholderia 等衰退。", "use": "党参连作减产幅度；有益菌衰退方向", "en": "Soil microbiome dysbiosis and rhizosphere metabolic dysfunction drive continuous cropping obstacles of Codonopsis tangshen"}, {"id": "L04", "journal": "Applied Soil Ecology", "year": 2021, "pmid": "", "doi": "10.1016/j.apsoil.2021.104003", "cn": "不同轮作制度改变蒙古黄芪根际细菌群落结构", "finding": "黄芪轮作燕麦 5 年，根际细菌多样性升高，Clostridia、Micromonosporales 等有益菌富集；群落组成随采样时间变化。", "use": "轮作提升有益菌；采样时间（季节）效应", "en": "Different crop rotation systems change the rhizosphere bacterial community structure of Astragalus membranaceus var. mongholicus"}, {"id": "L05", "journal": "PeerJ Preprints", "year": 2019, "pmid": "", "doi": "10.7287/peerj.preprints.27600v1", "cn": "蒙古黄芪连作过程中土壤微生物群落的动态演替", "finding": "连作 1、3、6 年根干重与根冠比下降；细菌真菌多样性与结构随连作年限及采样时间改变，酶活同步变化。", "use": "连作年限梯度设计（1/3/6 年）", "en": "Dynamic succession of soil microbial community during continuous cropping of Astragalus membranaceus var. mongholicus"}, {"id": "L06", "journal": "Soil Biology and Biochemistry", "year": 2018, "pmid": "", "doi": "10.1016/j.soilbio.2018.06.028", "cn": "调控根际微生物群落缓解人参再植障碍", "finding": "连作土壤 DiBP 累积；筛得 153 株降解菌，PG-1 72 h 降解逾 90%；连作 3 年其丰度降 79.9%，回接后 DiBP 降 39.2%、死苗率降 40.1%。", "use": "“有益菌缺失→毒物累积→死苗”的因果链", "en": "Manipulation of microbial community in the rhizosphere alleviates the replanting issues in Panax ginseng"}, {"id": "L07", "journal": "bioRxiv", "year": 2021, "pmid": "", "doi": "10.1101/2021.06.24.449857", "cn": "基于不同试验点与品种的白芷根际细菌多样性分析", "finding": "白芷根际细菌群落跨产地与品种相对稳定保守，Proteobacteria、Firmicutes 为关键类群，土壤因子主导群落组成。", "use": "产区差异小于作物差异；按产区建模的依据", "en": "Analysis of rhizosphere bacterial diversity of Angelica dahurica var. formosana based on different experimental sites and varieties (strains)"}, {"id": "L08", "journal": "Microbiome", "year": 2026, "pmid": "42010711", "doi": "10.1186/s40168-026-02393-x", "cn": "代谢组驱动的根际微生物组装配决定当归抗根腐病能力", "finding": "病土镰刀菌显著高于健康土、链霉菌显著低于健康土；健康土富集类固醇降解基因；根系分泌固醇脂与长链脂肪酸招募链霉菌 S15；合生元回接后 S15 同源 ASV 富集。", "use": "当归“镰刀菌↓、链霉菌↑”的直接证据；菌剂设计", "en": "Metabolome-driven rhizosphere microbiome assembly determining the health of medicinal herb (Angelica sinensis) against root rot"}, {"id": "L09", "journal": "Frontiers in Plant Science", "year": 2025, "pmid": "41685123", "doi": "10.3389/fpls.2025.1703258", "cn": "海拔介导的土壤微生物—养分动态塑造当归药效成分", "finding": "随海拔升高细菌真菌多样性先升后稳，AMF 与古菌稳定；2520—2717 m 产量与药效成分最佳；SEM 证实土壤—微生物—品质通路。", "use": "产区（海拔）分层；品质与微生物的定量关联", "en": "Altitude-mediated soil microbe-nutrient dynamics shape medicinal properties of Angelica sinensis"}, {"id": "L10", "journal": "PeerJ", "year": 2020, "pmid": "32257632", "doi": "10.7717/peerj.8541", "cn": "高寒未耕地土壤中当归幼苗期根际细菌与真菌群落", "finding": "幼苗期 α多样性无显著变化而 β多样性显著；真菌优势门随生育期更替，病原真菌丰度随生长上升；降水、地温、pH 为关键驱动。", "use": "病原真菌“随生长季上升”的直接证据；气候驱动因子", "en": "Rhizosphere bacterial and fungal communities during the growth of Angelica sinensis seedlings cultivated in an alpine uncultivated meadow soil"}, {"id": "L11", "journal": "Journal of Agricultural and Food Chemistry", "year": 2024, "pmid": "39196612", "doi": "10.1021/acs.jafc.4c03664", "cn": "基于植物—代谢物—土壤整合分析连作对党参生长与党参炔苷合成的影响", "finding": "连作 5 年显著抑制党参生长，党参炔苷含量明显下降；土壤理化与微生物同根系生长、炔苷合成强相关。", "use": "连作 1 年 vs 5 年对照；品质成分与微生物的关联", "en": "Effect of continuous cropping on growth and lobetyolin synthesis of the medicinal plant Codonopsis pilosula based on the integrated analysis of plant-metabolite-soil factors"}, {"id": "L12", "journal": "中国中药杂志", "year": 2025, "pmid": "41507739", "doi": "10.19540/j.cnki.cjcmm.20250512.101", "cn": "间作黄芪等豆科植物对黄芩根际微生物及药材品质的影响", "finding": "黄芩—黄芪间作效果最佳，根径、根鲜重与品质提升 15.4%；间作显著改变根际细菌群落，有益菌丰度显著高于单作。", "use": "间作提升有益菌；品质提升 15.4% 的参照值", "en": "间作黄芪等豆科植物对黄芩根际微生物及药材品质的影响", "note": "中文期刊，原文为中文"}, {"id": "L13", "journal": "Frontiers in Microbiology", "year": 2023, "pmid": "38075860", "doi": "10.3389/fmicb.2023.1308412", "cn": "基因型与环境因子驱动甘草生长及根际土壤真菌群落变化", "finding": "10 个基因型 × 2 个产区田间试验：甘草生长主要由基因型决定，药效成分与根际真菌群落主要由产地环境与土壤理化决定（SEM 验证）。", "use": "甘草的“产区环境 > 基因型”结论；支撑按产区建模", "en": "Genotype and environment factors driven licorice growth and rhizospheric soil fungal community changes"}, {"id": "L14", "journal": "Frontiers in Microbiology", "year": 2024, "pmid": "39296296", "doi": "10.3389/fmicb.2024.1448301", "cn": "盐渍化对甘草土壤细菌多样性、产量与品质的影响", "finding": "盐渍化加重使甘草产量、土壤养分及 Gemmatimonadetes、Myxococcota 丰度下降，而甘草酸、甘草苷与 Actinobacteria、Firmicutes 上升；产量取决于 EC 等理化，品质更依赖细菌多样性。", "use": "甘草（沿黄灌区）盐碱胁迫下的权重修正", "en": "The impact of salinization on soil bacterial diversity, yield and quality of Glycyrrhiza uralensis Fisch."}, {"id": "L15", "journal": "Archives of Microbiology", "year": 2021, "pmid": "33993326", "doi": "10.1007/s00203-021-02370-y", "cn": "不同土壤条件下野生与栽培甘草根际微生物的多样性与功能", "finding": "4428 个 OTU、41 个门；栽培地以 Actinobacteria 为主、野生地以 Proteobacteria 为主；野生根际固氮与硝酸盐还原等氮代谢通路更丰富，且与 NO3⁻-N 相关。", "use": "野生／栽培差异；氮循环作为品质关联指标", "en": "Diversity and function of rhizosphere microorganisms between wild and cultivated medicinal plant Glycyrrhiza uralensis Fisch under different soil conditions"}, {"id": "L16", "journal": "BMC Microbiology", "year": 2022, "pmid": "36138372", "doi": "10.1186/s12866-022-02638-3", "cn": "柴胡不同种植制度下根际土壤微生态的响应", "finding": "连作降低柴胡根际 pH、NO3⁻-N、速效钾与细菌 α 多样性及有益菌；柴胡—玉米轮作改善理化、降低有害菌；NH4⁺-N、有机质、速效钾为关键驱动因子。", "use": "柴胡连作与轮作的方向性证据；权重标定", "en": "Response of soil microecology to different cropping practice under Bupleurum chinense cultivation"}, {"id": "L17", "journal": "Microorganisms", "year": 2025, "pmid": "41156804", "doi": "10.3390/microorganisms13102346", "cn": "大豆—柴胡轮作通过改善土壤性质与酶活优化苗期根际微生物群落", "finding": "大豆—柴胡轮作显著提高土壤养分与酶活、优化细菌真菌群落组成并提升 α 多样性，微生物网络更复杂；速效磷、pH 与蔗糖酶、碱性磷酸酶为主要驱动因子。", "use": "轮作建议模块；柴胡苗期（3—5 月）窗口", "en": "Soybean-Bupleurum rotation system can optimize rhizosphere soil microbial community via impacting soil properties and enzyme activities during Bupleurum seedling stage"}, {"id": "L18", "journal": "Plant Direct", "year": 2022, "pmid": "36405510", "doi": "10.1002/pld3.461", "cn": "哈茨木霉生物肥对柴胡生长、产量与品质的影响", "finding": "施用哈茨木霉生物肥提高柴胡产量与品质，增加 NH4⁺-N、NO3⁻-N、速效钾磷及蔗糖酶、过氧化氢酶活性；Proteobacteria、Actinobacteria 与 Ascomycota 丰度上升。", "use": "木霉（F1）对柴胡的 A 级证据；菌剂处方", "en": "Effects of Trichoderma harzianum biofertilizer on growth, yield, and quality of Bupleurum chinense"}, {"id": "L19", "journal": "International Journal of Molecular Sciences", "year": 2022, "pmid": "35163617", "doi": "10.3390/ijms23031694", "cn": "细菌接种与蔗糖配施通过重塑代谢与土壤微生物群落促进大黄生长", "finding": "枯草芽孢杆菌 EZ99（10⁵ CFU/mL）配 0.15 g/L 蔗糖显著提高大黄根鲜重，蒽醌与酚类分别提升 1.5% 与 2.3%，并提高真菌多样性、抑制镰刀菌。", "use": "大黄唯一直接证据；芽孢杆菌与镰刀菌的反向关系", "en": "Bacterial inoculant and sucrose amendments improve the growth of Rheum palmatum L. by reprograming its metabolite composition and altering its soil microbial community"}, {"id": "L20", "journal": "Canadian Journal of Microbiology", "year": 2019, "pmid": "30508393", "doi": "10.1139/cjm-2018-0409", "cn": "轮作修复半夏连作土壤中微生物结构的退化", "finding": "连作随年限降低半夏根际 α 多样性，轮作则提升；连作土富集 Pseudomonas、Rhizobium，轮作土富集 Flavobacterium、Sphingomonas、Arthrobacter；土壤可划分为健康、亚健康、衰退三类。", "use": "半夏连作年限梯度；健康／衰退土壤的三分法", "en": "Remediation of deterioration in microbial structure in continuous Pinellia ternata cropping soil by crop rotation"}, {"id": "L21", "journal": "PLoS ONE", "year": 2024, "pmid": "39269967", "doi": "10.1371/journal.pone.0304898", "cn": "垄作提高半夏根际微生物多样性并提升产量", "finding": "垄作较平作使半夏产量提高 72.69%，根际细菌真菌多样性与结构显著改变，29 个细菌属显著变化而仅 4 个真菌属变化，细菌响应更敏感。", "use": "栽培方式（垄作）作为可调控变量；产量提升参照值", "en": "Ridge planting increases the rhizosphere microbiome diversity and improves the yield of Pinellia ternata (Thunb.) Breit in North China"}, {"id": "L22", "journal": "Letters in Applied Microbiology", "year": 2019, "pmid": "30776140", "doi": "10.1111/lam.13135", "cn": "ITS 扩增子揭示半夏连作土壤轮作后的真菌群落变化", "finding": "连作半夏土壤理化与真菌多样性显著低于未耕地，轮作后回升且随休茬年限延长而增强；Podospora、Alternaria 与肥力正相关，Fusarium 与土壤衰退相关。", "use": "半夏镰刀菌（F3）的 A 级证据；轮作年限建议", "en": "Alteration of crop rotation in continuous Pinellia ternata cropping soils profiled via fungal ITS amplicon sequencing"}, {"id": "L23", "journal": "Plants", "year": 2025, "pmid": "41225874", "doi": "10.3390/plants14213325", "cn": "扩增子测序揭示根际真菌失衡驱动枸杞根腐发生", "finding": "健康土与病土物种丰富度相近但结构迥异；病土 Fusarium 丰度为健康土 6.7 倍且居网络核心，健康土富集 Trichoderma，其抑菌率超 75%，模块度 0.818 对 0.4131。", "use": "枸杞镰刀菌／木霉的 A 级证据；生防菌筛选", "en": "Amplicon sequencing reveals rhizosphere fungal dysbiosis facilitates goji berry root rot onset"}, {"id": "L24", "journal": "Microorganisms", "year": 2023, "pmid": "36985267", "doi": "10.3390/microorganisms11030694", "cn": "健康与患根腐病枸杞植株土壤微生物群落的差异", "finding": "健康株根际与根区细菌丰富度显著高于病株，根表真菌丰富度亦更高；病株根表与根际 Fusarium 丰度升高，根表群落与根际、根区明显分化。", "use": "枸杞根腐的微生态证据；根际 vs 根表的分层采样依据", "en": "Differences in soil microbial communities between healthy and diseased Lycium barbarum cv. Ningqi-5 plants with root rot"}, {"id": "L25", "journal": "Microorganisms", "year": 2024, "pmid": "39770650", "doi": "10.3390/microorganisms12122447", "cn": "柴达木盆地健康与根腐病枸杞根际真菌群落研究", "finding": "健康枸杞根际全氮、有机质显著高于病株而 pH 相反；健康土真菌 α 多样性更高，子囊菌门为优势门，有益真菌富集。", "use": "枸杞产区（柴达木／甘肃）真菌基线；理化—真菌关联", "en": "Investigating the rhizosphere fungal communities of healthy and root-rot-infected Lycium barbarum in the Tsaidam Basin, China"}, {"id": "L26", "journal": "Frontiers in Plant Science", "year": 2024, "pmid": "39624241", "doi": "10.3389/fpls.2024.1458342", "cn": "烟草／菘蓝间作改善土壤质量并提高总产值", "finding": "烟草—菘蓝间作使有机质、速效钾、速效磷分别提高 17.38%、7.76%、2.78%，蔗糖酶、脲酶、过氧化氢酶最高提升 4.47 倍，并优化细菌群落结构。", "use": "板蓝根间作模式证据；土壤酶活作为功能指标", "en": "Tobacco/Isatis intercropping system improves soil quality and increase total production value"}, {"id": "L27", "journal": "Frontiers in Plant Science", "year": 2026, "pmid": "42100037", "doi": "10.3389/fpls.2026.1821717", "cn": "内生细菌对菘蓝生长、药材品质与根际土壤环境的影响", "finding": "3 株内生菌田间灌根：T11-28 与 BC00 分别对地上、地下干重提升最显著；BC00 提高叶片靛蓝与靛玉红，BV11 提高根部告依春，并改变根际群落。", "use": "板蓝根内生菌—品质通路；菌剂候选", "en": "The effect of endophytic bacteria on the growth, medicinal quality, and rhizosphere soil environment of Isatis indigotica"}, {"id": "L28", "journal": "应用生态学报", "year": 2019, "pmid": "31418207", "doi": "10.13287/j.1001-9332.201908.030", "cn": "生物有机肥对连作当归根际土壤细菌群落结构和根腐病的影响", "finding": "连作 2 年当归施用生物有机肥 DZF-363：产量较 CK 增 18.8%、较农药组增 6.8%；根腐病防效 52.0%；苗期脲酶活性升 52.4%。", "use": "当归连作＋生物有机肥的直接田间证据；菌剂处方", "note": "中文文献"}, {"id": "L29", "journal": "应用生态学报", "year": 2021, "pmid": "34951266", "doi": "10.13287/j.1001-9332.202112.031", "cn": "种植模式对当归根际细菌群落多样性及代谢通路的影响", "finding": "甘肃渭源 5 种轮作模式比较：根际细菌分属 26 门 368 属；豌豆-黄芪-当归模式电导率显著升高，另三种模式降低且 CO₂ 呼吸速率显著提升。", "use": "当归轮作模式设计；产区（渭源）验证", "note": "中文文献"}, {"id": "L30", "journal": "环境科学", "year": 2023, "pmid": "37973120", "doi": "10.13227/j.hjkx.202211100", "cn": "连作对党参根际土壤理化性质、微生物活性及群落特征的影响", "finding": "连作 1—4 年，党参根际有机碳增 11.1%—80.5%、全磷增 11.8%—78.4%、全氮增 31.3%—68.8%，而 pH 持续下降，微生物活性与群落结构随之改变。", "use": "党参连作年限梯度；pH 下降作为退化指标", "note": "中文文献"}, {"id": "L31", "journal": "环境科学", "year": 2024, "pmid": "39323174", "doi": "10.13227/j.hjkx.202311078", "cn": "连作对枸杞根区土壤理化性质、农药残留和微生物群落的影响", "finding": "连作 15 年枸杞根区总盐较 2 年、9 年分别高 51.97%、54.33%；吡虫啉残留高 39.58%、36.61%；细菌真菌群落多样性随年限改变。", "use": "枸杞连作风险模型；盐渍化与农残双指标", "note": "中文文献"}, {"id": "L32", "journal": "环境科学", "year": 2026, "pmid": "42765261", "doi": "10.13227/j.hjkx.202507214", "cn": "覆盖作物介导的枸杞根际微生态调控与连作障碍缓解机制", "finding": "枸杞套作油用萝卜 4 年：细菌 Shannon 与真菌 Ace/Sobs/Chao1 显著升高；速效磷、速效氮、微生物量碳分别增 29.89%、74.33%、23.60%，pH 降 4.31%。", "use": "枸杞连作障碍的覆盖作物调控方案", "note": "中文文献"}, {"id": "L33", "journal": "中国中药杂志", "year": 2023, "pmid": "37005837", "doi": "10.19540/j.cnki.cjcmm.20221208.104", "cn": "干旱胁迫下药用大黄根部药效成分及根际土壤微生物变化规律及其相互作用机制研究", "finding": "轻度干旱下大黄根中芦丁、大黄素、没食子酸、儿茶素显著升高；重度干旱显著低于正常供水；干旱加剧使根际微生物物种数与丰富度显著下降。", "use": "大黄“水分—微生物—品质”三者关系；灌溉窗口建议", "note": "中文文献"}, {"id": "L34", "journal": "中国中药杂志", "year": 2024, "pmid": "38812228", "doi": "10.19540/j.cnki.cjcmm.20240119.102", "cn": "药用植物根系分泌物与根际微生物相互作用及其在中药材生态种植中的应用", "finding": "综述：根系分泌物是植物与土壤间物质与信号交换的媒介，调控根际微生态；合理利用该互作是保障药材健康生长、推动生态种植的重要途径。", "use": "机制层总论；支撑“根系分泌物招募有益菌”的叙述", "note": "中文文献·综述"}, {"id": "L35", "journal": "中国中药杂志", "year": 2025, "pmid": "40686107", "doi": "10.19540/j.cnki.cjcmm.20250314.103", "cn": "药用植物-微生物互作研究进展", "finding": "综述：药用植物分泌特定化合物招募微生物，微生物通过促进养分吸收、增强抗病性与调控次生代谢，提升药材产量、品质与道地性。", "use": "项目总体理论框架的中文出处", "note": "中文文献·综述"}, {"id": "L36", "journal": "生物工程学报", "year": 2026, "pmid": "42920228", "doi": "10.13345/j.cjb.260108", "cn": "氮磷复合菌T4对蒙古黄芪生长与根际环境的影响", "finding": "浸种接种氮磷复合菌 T4 60 天后：黄芪幼苗生长指标、根际氮磷钾与土壤酶活显著提升，细菌群落结构与装配机制发生改变。", "use": "黄芪根际促生菌的直接证据；菌剂候选", "note": "中文文献"}, {"id": "L37", "journal": "中国中药杂志", "year": 2024, "pmid": "38621967", "doi": "10.19540/j.cnki.cjcmm.20231213.101", "cn": "运用宏基因组技术研究施加中药渣有机肥对丹参及土壤微生物群落的影响", "finding": "中药渣有机肥使丹参地上与地下干鲜重增 151.9%—371.4%，迷迭香酸增 887.0%、丹酚酸 B 增 183.0%，根际细菌真菌群落结构显著改变。", "use": "有机物料投入的效果参照；品质提升幅度", "note": "中文文献"}], "evid": {"当归": {"B1": {"g": "A", "r": ["L08", "L28"], "n": "生物有机肥提高连作当归产量 18.8%、根腐病防效 52.0%"}, "B2": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "B4": {"g": "A", "r": ["L08"], "n": "健康土链霉菌富集，S15 直接拮抗镰刀菌"}, "F1": {"g": "C", "r": [], "n": "木霉对镰刀菌的重寄生为已知机制，但未在本数据源中直接验证"}, "F2": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F3": {"g": "A", "r": ["L08"], "n": "病土镰刀菌显著高于健康土；镰刀菌是根腐病主效病原"}, "F4": {"g": "B", "r": ["L10"], "n": "同属作物上病原真菌丰度随生长季上升"}, "F5": {"g": "B", "r": ["L03", "L06"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F6": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}}, "党参": {"B1": {"g": "B", "r": ["L03", "L30"], "n": "连作使有益菌衰退，有机碳与全氮累积、pH 下降"}, "B2": {"g": "A", "r": ["L03"], "n": "连作使 Pseudomonas 等显著减少"}, "B4": {"g": "B", "r": ["L04"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F1": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F2": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F3": {"g": "A", "r": ["L03", "L11"], "n": "连作下病原相关类群上升、有益菌衰退，产量降 40.47%"}, "F4": {"g": "B", "r": ["L03", "L06"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F5": {"g": "B", "r": ["L03"], "n": "根腐类病原与连作年限正相关"}, "F6": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}}, "黄芪": {"B1": {"g": "A", "r": ["L04"], "n": "轮作燕麦后 Clostridia、Micromonosporales 等有益菌富集"}, "B2": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "B4": {"g": "A", "r": ["L04"], "n": "轮作显著提升有益菌丰度"}, "F1": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F2": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F3": {"g": "B", "r": ["L05"], "n": "连作 1/3/6 年群落持续改变，病原相关类群上升"}, "F4": {"g": "B", "r": ["L03", "L06"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F5": {"g": "B", "r": ["L03", "L06"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F6": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}}, "甘草": {"B1": {"g": "B", "r": ["L14"], "n": "盐渍化下 Firmicutes 丰度与甘草酸、甘草苷同向上升"}, "B2": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "B4": {"g": "B", "r": ["L14", "L15"], "n": "Actinobacteria 在栽培甘草根际占优，与品质相关"}, "F1": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F2": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F3": {"g": "B", "r": ["L23"], "n": "同区域枸杞根腐研究显示镰刀菌为关键病原（外推）"}, "F4": {"g": "B", "r": ["L03", "L06"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F5": {"g": "B", "r": ["L03", "L06"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F6": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}}, "柴胡": {"B1": {"g": "B", "r": ["L16"], "n": "连作降低有益菌，轮作恢复"}, "B2": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "B4": {"g": "B", "r": ["L18"], "n": "木霉处理后 Actinobacteria 丰度上升"}, "F1": {"g": "A", "r": ["L18"], "n": "哈茨木霉生物肥直接提高柴胡产量与品质"}, "F2": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F3": {"g": "B", "r": ["L16"], "n": "连作增加有害菌、轮作降低；镰刀菌为常见根腐病原"}, "F4": {"g": "B", "r": ["L03", "L06"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F5": {"g": "B", "r": ["L03", "L06"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F6": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}}, "大黄": {"B1": {"g": "A", "r": ["L19"], "n": "枯草芽孢杆菌 EZ99 直接促进大黄生长并提升蒽醌"}, "B2": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "B4": {"g": "B", "r": ["L04"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F1": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F2": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F3": {"g": "A", "r": ["L19"], "n": "接种处理显著抑制根际 Fusarium"}, "F4": {"g": "B", "r": ["L03", "L06"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F5": {"g": "B", "r": ["L03", "L06"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F6": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}}, "黄芩": {"B1": {"g": "A", "r": ["L12"], "n": "间作后有益菌丰度显著高于单作，品质提升 15.4%"}, "B2": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "B4": {"g": "B", "r": ["L04"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F1": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F2": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F3": {"g": "B", "r": ["L12"], "n": "间作缓解连作障碍，病原压力下降"}, "F4": {"g": "B", "r": ["L03", "L06"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F5": {"g": "B", "r": ["L03", "L06"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F6": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}}, "半夏": {"B1": {"g": "B", "r": ["L04"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "B2": {"g": "B", "r": ["L20"], "n": "连作土壤富集 Pseudomonas，轮作后群落重组"}, "B4": {"g": "B", "r": ["L04"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F1": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F2": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F3": {"g": "A", "r": ["L22"], "n": "Fusarium 与半夏连作土壤衰退直接相关"}, "F4": {"g": "B", "r": ["L03", "L06"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F5": {"g": "B", "r": ["L03", "L06"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F6": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}}, "枸杞": {"B1": {"g": "B", "r": ["L23"], "n": "健康土有益菌整体富集"}, "B2": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "B4": {"g": "B", "r": ["L04"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F1": {"g": "A", "r": ["L23"], "n": "健康土 Trichoderma 对镰刀菌抑制率超 75%"}, "F2": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F3": {"g": "A", "r": ["L23", "L24", "L31"], "n": "病土镰刀菌为健康土的 6.7 倍并居网络核心；连作 15 年总盐增 51.97%"}, "F4": {"g": "B", "r": ["L03", "L06"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F5": {"g": "B", "r": ["L03", "L06"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F6": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}}, "板蓝根": {"B1": {"g": "B", "r": ["L26", "L27"], "n": "间作与内生菌处理优化根际细菌群落"}, "B2": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "B4": {"g": "B", "r": ["L04"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F1": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F2": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F3": {"g": "B", "r": ["L26"], "n": "间作改善土壤质量、降低连作障碍（外推）"}, "F4": {"g": "B", "r": ["L03", "L06"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F5": {"g": "B", "r": ["L03", "L06"], "n": "无本药材直接文献，按同类作物研究与模型推算"}, "F6": {"g": "C", "r": [], "n": "无本药材直接文献，按同类作物研究与模型推算"}}}};
+const REG = {}; DATA.regions.forEach(r=>REG[r.id]=r);
+const HERB = {}; DATA.herbs.forEach(h=>HERB[h.name]=h);
+const MB = {}; DATA.microbes.forEach(m=>MB[m.id]=m);
+const REF = {}; DATA.refs.forEach(r=>REF[r.id]=r);
+const SER = {}; DATA.series.forEach(s=>SER[s.region+'|'+s.month]=s);
+const FIT = {}; DATA.fit.forEach(f=>FIT[f.region+'|'+f.herb+'|'+f.month]=f);
+const HERB_REGION = {"当归":"G1","党参":"G1","黄芪":"G1","半夏":"G1","枸杞":"G2","甘草":"G2","板蓝根":"G2","柴胡":"G3","黄芩":"G3","大黄":"G3"};
+const COLMAP = {B1:"bacillus",B2:"pseudomonas",B3:"nifh",B4:"streptomyces",F1:"trichoderma",F2:"amf",F3:"fusarium",F4:"ilyonectria",F5:"rhizoctonia",F6:"alternaria"};
+const SCALE = {bacillus:8,pseudomonas:4,trichoderma:3.5,amf:55,streptomyces:3.5,nifh:5,fusarium:6,ilyonectria:2.2,rhizoctonia:1.6,alternaria:3.2};
+const MONTHS = [1,2,3,4,5,6,7,8,9,10,11,12];
+const SEASONS = ["春季","夏季","秋季","冬季"];
+const SEASON_MONTHS = {"春季":[3,4,5],"夏季":[6,7,8],"秋季":[9,10,11],"冬季":[12,1,2]};
+const MATRIX_MB = ["B1","B2","B4","F1","F2","F3","F4","F5","F6"];
+const HERBS_MAIN = {G1:'当归', G2:'枸杞', G3:'柴胡'};
+
+const state = {tab:'time', region:'G1', herb:'当归', month:5, years:5, riskRegion:'G1',
+               winRegion:'G1', season:"夏季", cell:null, ovRegion:'G1'};
+
+function levelOf(ai){
+  if(ai>=64) return {name:'强促进',v:2,c:'#2F6B4F'};
+  if(ai>=56) return {name:'促进',v:1,c:'#5C8F6E'};
+  if(ai>=48) return {name:'中性',v:0,c:'#C8A165'};
+  if(ai>=40) return {name:'抑制',v:-1,c:'#C2703F'};
+  return {name:'强抑制',v:-2,c:'#B0472F'};
+}
+function ser(region,m){ return SER[region+'|'+m]; }
+const el = (s)=>document.querySelector(s);
+function path(pts){ return pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' '); }
+function fmt(v,d=1){ return (Math.round(v*Math.pow(10,d))/Math.pow(10,d)).toFixed(d); }
+function gradeSpan(g){ return `<span class="grade g${g}">${g}</span>`; }
+
+/* ---------- 计算：某药材 × 某菌 × 某季节 的作用强度 ---------- */
+function rawOf(herbName, mid, season){
+  const region = HERB_REGION[herbName];
+  const key = COLMAP[mid];
+  const ms = SEASON_MONTHS[season];
+  const avgRaw = ms.reduce((s,m)=> s + ser(region,m)[key], 0)/ms.length;   // 真实量纲（%）
+  const avgNorm = ms.reduce((s,m)=> s + Math.min(1, ser(region,m)[key]/SCALE[key]), 0)/ms.length;
+  const w = (HERB[herbName].b[mid] ?? HERB[herbName].d[mid] ?? 0);
+  return {avg: avgNorm, avgRaw, w, raw: w*avgNorm};
+}
+function rowRange(mid, season){
+  const v = DATA.herbs.map(h=>rawOf(h.name, mid, season).raw);
+  return {min: Math.min(...v), max: Math.max(...v)};
+}
+function contrib(herbName, mid, season){
+  const d = rawOf(herbName, mid, season);
+  const rg = rowRange(mid, season);
+  const span = Math.max(1e-6, rg.max - rg.min);
+  const norm = (d.raw - rg.min) / span;          // 行内相对强度 0..1
+  const lvl = norm < 0.34 ? 1 : (norm < 0.67 ? 2 : 3);
+  const dir = MB[mid].dir === '+' ? 1 : -1;
+  return {avg: d.avg, avgRaw: d.avgRaw, w: d.w, val: norm, raw: d.raw, dir, lvl};
+}
+const LEVEL_TXT = {1:'弱',2:'中',3:'强'};
+function colorFor(dir, lvl){
+  if(dir>0) return ['#BBD8C5','#7FB093','#2F6B4F'][lvl-1];
+  return ['#F0C9B6','#D08A66','#B0472F'][lvl-1];
+}
+
+/* ---------------- 主图 ---------------- */
+function drawMain(){
+  const r = state.region;
+  const W=980,H=400,L=56,R=18,T=18,B=44;
+  const x = m => L + (m-1)*(W-L-R)/11;
+  const y = v => T + (1-v)*(H-T-B);
+  const ben = MONTHS.map(m=>FIT[r+'|'+HERBS_MAIN[r]+'|'+m].ben);
+  const dis = MONTHS.map(m=>FIT[r+'|'+HERBS_MAIN[r]+'|'+m].dis);
+  let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">`;
+  for(let i=0;i<=4;i++){
+    const v=i/4, yy=y(v);
+    s += `<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="#EEEFE7"/>`;
+    s += `<text x="${L-12}" y="${yy+4}" text-anchor="end" font-size="11" fill="#98a094">${v.toFixed(2)}</text>`;
+  }
+  const win = MONTHS.filter(m=>dis[m-1]>ben[m-1]);
+  if(win.length){
+    const top = win.map(m=>[x(m), y(ben[m-1])]);
+    const bot = win.slice().reverse().map(m=>[x(m), y(dis[m-1])]);
+    s += `<polygon points="${top.concat(bot).map(p=>p[0]+','+p[1]).join(' ')}" fill="#F3E2D6"/>`;
+  }
+  MONTHS.forEach(m=>{
+    s += `<line x1="${x(m)}" y1="${T}" x2="${x(m)}" y2="${H-B}" stroke="#F5F6F0"/>`;
+    s += `<text x="${x(m)}" y="${H-B+20}" text-anchor="middle" font-size="11" fill="#6b7568">${m}月</text>`;
+  });
+  s += `<path d="${path(MONTHS.map((m,i)=>[x(m),y(ben[i])]))}" fill="none" stroke="#2F6B4F" stroke-width="2.6" stroke-linejoin="round"/>`;
+  s += `<path d="${path(MONTHS.map((m,i)=>[x(m),y(dis[i])]))}" fill="none" stroke="#B0472F" stroke-width="2.6" stroke-linejoin="round"/>`;
+  MONTHS.forEach((m,i)=>{
+    s += `<circle cx="${x(m)}" cy="${y(ben[i])}" r="3.6" fill="#fff" stroke="#2F6B4F" stroke-width="2"/>`;
+    s += `<circle cx="${x(m)}" cy="${y(dis[i])}" r="3.6" fill="#fff" stroke="#B0472F" stroke-width="2"/>`;
+  });
+  if(win.length){
+    const a=win[0], b=win[win.length-1];
+    s += `<line x1="${x(a)}" y1="${T-2}" x2="${x(b)}" y2="${T-2}" stroke="#C2703F" stroke-width="1.6"/>`;
+    s += `<line x1="${x(a)}" y1="${T-8}" x2="${x(a)}" y2="${T-2}" stroke="#C2703F" stroke-width="1.6"/>`;
+    s += `<line x1="${x(b)}" y1="${T-8}" x2="${x(b)}" y2="${T-2}" stroke="#C2703F" stroke-width="1.6"/>`;
+    s += `<text x="${(x(a)+x(b))/2}" y="${T-9}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#B0472F">错配窗口 ${a}—${b} 月</text>`;
+  }
+  s += `<text x="${W-R-4}" y="${H-8}" text-anchor="end" font-size="10.5" fill="#B0B6AC">模型推算 · 非实测</text>`;
+  s += `</svg>`;
+  el('#mainChart').innerHTML = s;
+}
+
+function drawKpis(){
+  const r = state.region;
+  const rows = MONTHS.map(m=>ser(r,m));
+  const peak = rows.reduce((a,b)=>b.total_16s>a.total_16s?b:a);
+  const fus = rows.reduce((a,b)=>b.fusarium>a.fusarium?b:a);
+  const ben = MONTHS.map(m=>FIT[r+'|'+HERBS_MAIN[r]+'|'+m].ben);
+  const dis = MONTHS.map(m=>FIT[r+'|'+HERBS_MAIN[r]+'|'+m].dis);
+  const gap = MONTHS.map(m=>({m, d: ben[m-1]-dis[m-1]}));
+  const best = gap.reduce((a,b)=>b.d>a.d?b:a);
+  const worst = gap.reduce((a,b)=>b.d<a.d?b:a);
+  const items = [
+    ['微生物总量峰值', peak.month+' 月', '模型推算 '+peak.total_16s+' ×10⁸/g', 'C'],
+    ['镰刀菌峰值', fus.month+' 月', '模型推算 '+fus.fusarium+'%', 'B'],
+    ['全年最优窗口', best.m+' 月', '供给高出胁迫 '+fmt(best.d,2), 'C'],
+    ['风险最高月份', worst.m+' 月', '胁迫高出供给 '+fmt(-worst.d,2), 'C']
+  ];
+  el('#kpis').innerHTML = items.map(i=>
+    `<div class="kpi"><div class="k">${i[0]} ${gradeSpan(i[3])}</div><div class="v">${i[1]}</div><div class="n">${i[2]}</div></div>`
+  ).join('');
+}
+
+function drawMinis(){
+  const r = state.region;
+  const ms = [['bacillus','芽孢杆菌','B1'],['trichoderma','木霉','F1'],['amf','AMF 侵染率','F2'],
+              ['fusarium','镰刀菌','F3'],['ilyonectria','锈腐菌','F4'],['rhizoctonia','丝核菌','F5']];
+  el('#minis').innerHTML = ms.map(([k,label,id])=>{
+    const vals = MONTHS.map(m=>ser(r,m)[k]);
+    const mx = Math.max(...vals), mn = Math.min(...vals);
+    const W=250,H=76,L=6,R=6,T=8,B=16;
+    const x = i => L + i*(W-L-R)/11;
+    const y = v => T + (1-(v-mn)/(mx-mn||1))*(H-T-B);
+    const pts = vals.map((v,i)=>[x(i),y(v)]);
+    let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">`;
+    s += `<path d="${path(pts.concat([[x(11),H-B],[x(0),H-B]]))}" fill="${MB[id].dir==='+'?'#EDF4EE':'#F8EAE3'}"/>`;
+    s += `<path d="${path(pts)}" fill="none" stroke="${MB[id].dir==='+'?'#5C8F6E':'#C2703F'}" stroke-width="2"/>`;
+    s += `<circle cx="${x(11)}" cy="${y(vals[11])}" r="2.6" fill="#fff" stroke="${MB[id].dir==='+'?'#5C8F6E':'#C2703F'}" stroke-width="2"/>`;
+    s += `</svg>`;
+    const pk = Math.max(...vals);
+    return `<div><div class="mini-t"><span>${label}</span><b>峰值 ${pk}%</b></div>${s}</div>`;
+  }).join('');
+}
+
+/* ---------------- 季节·菌·药 矩阵 ---------------- */
+function drawSeasonSeg(){
+  el('#seasonSeg').innerHTML = SEASONS.map(s=>
+    `<button data-s="${s}" class="${s===state.season?'on':''}">${s}</button>`).join('');
+  el('#seasonSeg').querySelectorAll('button').forEach(b=>{
+    b.onclick = ()=>{ state.season=b.dataset.s; state.cell=null; drawSeasonSeg(); drawMatrix(); drawRank(); };
+  });
+}
+
+function drawMatrix(){
+  const season = state.season;
+  const herbs = DATA.herbs.map(h=>h.name);
+  const cols = herbs.length;
+  let html = `<div class="mx" style="grid-template-columns:104px repeat(${cols},1fr)">`;
+  html += `<div></div>`;
+  herbs.forEach(h=>{ html += `<div class="hrow">${h}<div style="font-weight:400;font-size:10px;color:#98a094">${REG[HERB_REGION[h]].short}</div></div>`; });
+  MATRIX_MB.forEach(mid=>{
+    const m = MB[mid];
+    html += `<div class="lrow"><b>${m.cn}</b><span>${m.id} · ${m.dir==='+'?'有益':'病原'}</span></div>`;
+    herbs.forEach(h=>{
+      const c = contrib(h, mid, season);
+      const col = colorFor(c.dir, c.lvl);
+      const g = DATA.evid[h][mid].g;
+      const sel = (state.cell && state.cell.h===h && state.cell.m===mid) ? ' sel' : '';
+      html += `<div class="mc${sel}" style="background:${col}" data-h="${h}" data-m="${mid}" title="${h} · ${m.cn} · ${season} · ${LEVEL_TXT[c.lvl]}">
+        <span>${c.dir>0?'+':'−'}${LEVEL_TXT[c.lvl]}</span><span class="g">${g}</span></div>`;
+    });
+  });
+  html += `</div>`;
+  el('#matrixWrap').innerHTML = html;
+  el('#matrixWrap').querySelectorAll('.mc').forEach(n=>{
+    n.onclick = ()=>{ state.cell={h:n.dataset.h, m:n.dataset.m}; drawMatrix(); drawDetail(); };
+  });
+  if(!state.cell){ state.cell={h:'当归', m:'F3'}; drawDetail(); }
+}
+
+function drawRank(){
+  const season = state.season;
+  const items = [];
+  DATA.herbs.forEach(h=>{ MATRIX_MB.forEach(mid=>{
+    const c = contrib(h.name, mid, season);
+    items.push({h:h.name, mid, c});
+  });});
+  const gLvl = v => v < 0.20 ? 1 : (v < 0.42 ? 2 : 3);
+  const pos = items.filter(i=>i.c.dir>0).sort((a,b)=>b.c.raw-a.c.raw).slice(0,5);
+  const neg = items.filter(i=>i.c.dir<0).sort((a,b)=>b.c.raw-a.c.raw).slice(0,5);
+  el('#rankSub').textContent = season + '：左侧为促进作用最强的五组，右侧为抑制最强的五组';
+  const row=(it,i,cls)=>{
+    const g = DATA.evid[it.h][it.mid].g;
+    return `<div class="rank" data-h="${it.h}" data-m="${it.mid}" style="cursor:pointer">
+      <span class="no">${i+1}</span>
+      <span class="nm"><b>${it.h}</b> × ${MB[it.mid].cn} ${gradeSpan(g)}</span>
+      <span style="width:64px;height:6px;background:#EEF0E9;border-radius:99px;overflow:hidden"><i style="display:block;height:100%;width:${Math.min(100,it.c.raw/0.85*100).toFixed(0)}%;background:${cls}"></i></span><span class="vv" style="color:${cls};width:26px;text-align:right">${cls==='#2F6B4F'?'+':'−'}${LEVEL_TXT[gLvl(it.c.raw)]}</span></div>`;
+  };
+  el('#rankList').innerHTML =
+    `<div style="font-size:11.5px;color:#2F6B4F;font-weight:700;margin:2px 0 4px">促进</div>` +
+    pos.map((it,i)=>row(it,i,'#2F6B4F')).join('') +
+    `<div style="font-size:11.5px;color:#B0472F;font-weight:700;margin:12px 0 4px">抑制</div>` +
+    neg.map((it,i)=>row(it,i,'#B0472F')).join('');
+  el('#rankList').querySelectorAll('.rank').forEach(n=>{
+    n.onclick = ()=>{ state.cell={h:n.dataset.h, m:n.dataset.m}; drawMatrix(); drawDetail(); };
+  });
+}
+
+function seasonBars(h, m, cur){
+  const vals = SEASONS.map(s=>rawOf(h, m, s).raw);
+  const mx = Math.max(...vals, 0.01);
+  const W = 360, H = 96, bw = 48, gap = 30, base = 70;
+  const dir = MB[m].dir === '+' ? 1 : -1;
+  let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:380px;height:auto">`;
+  SEASONS.forEach((sea,i)=>{
+    const x = 20 + i*(bw+gap);
+    const hgt = Math.max(3, vals[i]/mx*54);
+    const col = dir>0 ? (sea===cur?'#2F6B4F':'#8FB79C') : (sea===cur?'#B0472F':'#D9967B');
+    s += `<rect x="${x}" y="${base-hgt}" width="${bw}" height="${hgt}" rx="4" fill="${col}"/>`;
+    s += `<text x="${x+bw/2}" y="${base+14}" text-anchor="middle" font-size="10.5" fill="${sea===cur?'#22281f':'#98a094'}">${sea}</text>`;
+    s += `<text x="${x+bw/2}" y="${base-hgt-4}" text-anchor="middle" font-size="9.5" fill="#98a094">${(vals[i]*100).toFixed(0)}</text>`;
+  });
+  s += `<line x1="10" y1="${base}" x2="${W-10}" y2="${base}" stroke="#E3E5DC"/>`;
+  s += `<text x="${W-8}" y="${H-4}" text-anchor="end" font-size="9" fill="#B0B6AC">作用量（相对值）</text>`;
+  s += `</svg>`;
+  return s;
+}
+
+function drawDetail(){
+  if(!state.cell){ el('#mDetail').innerHTML=''; return; }
+  const {h, m} = state.cell;
+  const season = state.season;
+  const c = contrib(h, m, season);
+  const e = DATA.evid[h][m];
+  const mb = MB[m];
+  const col = colorFor(c.dir, c.lvl);
+  let refs = e.r.length ? e.r.map(id=>{
+    const r = REF[id];
+    return `<div style="font-size:11.5px;color:#3a4438;margin-top:6px;line-height:1.7">
+      <b>${r.id}</b> ${r.en || r.cn}　<span style="color:#98a094">${r.journal} ${r.year}${r.pmid?' · PMID '+r.pmid:' · DOI '+r.doi}</span></div>`;
+  }).join('') : `<div style="font-size:11.5px;color:#98a094;margin-top:6px">暂无直接文献，结论为模型推算。</div>`;
+
+  el('#mDetail').innerHTML = `
+    <h2>${h} × ${mb.cn}</h2>
+    <div class="sub">${season} · 道地产区 ${REG[HERB_REGION[h]].short}</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+      <div style="width:54px;height:54px;border-radius:12px;background:${col};color:#fff;display:flex;
+        align-items:center;justify-content:center;font-size:15px;font-weight:700">${c.dir>0?'+':'−'}${LEVEL_TXT[c.lvl]}</div>
+      <div style="font-size:12.5px;line-height:1.8">
+        <div>作用方向：<b style="color:${c.dir>0?'#2F6B4F':'#B0472F'}">${c.dir>0?'促进':'抑制'}</b>　
+             证据等级：${gradeSpan(e.g)}</div>
+        <div style="color:#6b7568">敏感权重 ${c.w}　·　${season}平均相对丰度 ${c.avgRaw.toFixed(2)}%</div>
+      </div>
+    </div>
+    <div style="font-size:12.5px;color:#3a4438;line-height:1.75;background:#FBFCF7;border-radius:9px;padding:10px 12px">
+      ${e.n}
+    </div>
+    <h3 class="sec">四季对比</h3>
+    ${seasonBars(h, m, season)}
+    <h3 class="sec">文献依据</h3>
+    ${refs}
+    <div class="note" style="margin-top:10px">
+      强度为“权重 × 季节平均丰度”归一化后的模型输出（C 级亦如此），不代表实测数值。
+    </div>`;
+}
+
+/* ---------------- 日历 ---------------- */
+function drawCal(){
+  const h = state.herb, r = HERB_REGION[h];
+  el('#monLabels').innerHTML = MONTHS.map(m=>`<div>${m}</div>`).join('');
+  el('#cal').innerHTML = MONTHS.map(m=>{
+    const f = FIT[r+'|'+h+'|'+m];
+    const lv = levelOf(f.ai);
+    const sel = m===state.month ? ' sel':'';
+    return `<div class="cell${sel}" style="background:${lv.c}" data-m="${m}" title="${m}月 · ${lv.name} · MAI ${f.ai}（模型推算）">
+      <b>${Math.round(f.ai)}</b><span>${lv.name}</span></div>`;
+  }).join('');
+  el('#cal').querySelectorAll('.cell').forEach(c=>{
+    c.onclick = ()=>{ state.month = +c.dataset.m; drawCal(); drawDetailCal(); };
+  });
+  drawDetailCal();
+}
+
+function drawDetailCal(){
+  const h = state.herb, r = HERB_REGION[h], m = state.month;
+  const f = FIT[r+'|'+h+'|'+m], s = ser(r,m), lv = levelOf(f.ai);
+  const hb = HERB[h];
+  const bc = Object.entries(hb.b).map(([k,w])=>({k, w, v:s[COLMAP[k]], sc:Math.min(1,s[COLMAP[k]]/SCALE[COLMAP[k]])*w}));
+  const dc = Object.entries(hb.d).map(([k,w])=>({k, w, v:s[COLMAP[k]], sc:Math.min(1,s[COLMAP[k]]/SCALE[COLMAP[k]])*w}));
+  bc.sort((a,b)=>b.sc-a.sc); dc.sort((a,b)=>b.sc-a.sc);
+  const topb = bc[0], topd = dc[0];
+  const advice = {
+    '强促进':['最佳窗口','微生物条件处于全年最优区间，是播种、移栽或追施菌剂的最佳时机。'],
+    '促进':['条件良好','可按计划推进农事操作，注意保持土壤湿度稳定。'],
+    '中性':['条件一般','无明显增益或风险，适合常规田间管理。'],
+    '抑制':['需要避让','病原压力上升，避免移栽、中耕伤根；如需施药，采用保护性方案。'],
+    '强抑制':['高风险','病原胁迫显著高于益菌供给，建议提前 15 天施用拮抗菌剂，严格控水。']
+  }[lv.name];
+  el('#detailCard').innerHTML = `
+    <div style="display:flex;align-items:flex-start;gap:18px">
+      <div>
+        <div style="font-size:11.5px;color:var(--muted)">${h} · ${REG[r].short} · ${m} 月 ${gradeSpan('C')}</div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-top:2px">
+          <div style="font-size:40px;font-weight:700;line-height:1;color:${lv.c}">${Math.round(f.ai)}</div>
+          <div style="font-size:12px;color:var(--faint)">MAI</div>
+        </div>
+        <div style="margin-top:6px"><span class="tag" style="background:${lv.c}22;color:${lv.c}">${lv.name}</span></div>
+      </div>
+      <div style="flex:1;font-size:12.5px;color:#3a4438">
+        <div style="font-weight:700">${advice[0]}</div>
+        <div style="color:var(--muted);line-height:1.75">${advice[1]}</div>
+      </div>
+    </div>
+    <h3 class="sec">供给与胁迫</h3>
+    <div style="font-size:12px;color:var(--muted);display:flex;justify-content:space-between"><span>益菌供给</span><b style="color:#2F6B4F">${fmt(f.ben,2)}</b></div>
+    <div class="bar"><i style="width:${f.ben*100}%;background:#5C8F6E"></i></div>
+    <div style="font-size:12px;color:var(--muted);display:flex;justify-content:space-between;margin-top:8px"><span>病原胁迫</span><b style="color:#B0472F">${fmt(f.dis,2)}</b></div>
+    <div class="bar"><i style="width:${f.dis*100}%;background:#C2703F"></i></div>
+    <h3 class="sec">主导因子</h3>
+    <table>
+      <tr><th>类型</th><th>类群</th><th>当月丰度</th><th>权重</th><th>证据</th></tr>
+      <tr><td><span class="tag">益菌</span></td><td>${MB[topb.k].cn}</td><td>${topb.v}%</td><td>${topb.w}</td>
+          <td>${gradeSpan(DATA.evid[h][topb.k] ? DATA.evid[h][topb.k].g : 'C')}</td></tr>
+      <tr><td><span class="tag clay">病原</span></td><td>${MB[topd.k].cn}</td><td>${topd.v}%</td><td>${topd.w}</td>
+          <td>${gradeSpan(DATA.evid[h][topd.k] ? DATA.evid[h][topd.k].g : 'C')}</td></tr>
+    </table>
+    <div class="note" style="margin-top:8px">${MB[topd.k].func}。${h}对其权重 ${topd.w}。</div>`;
+
+  const W=430,H=200,L=30,R=10,T=10,B=24;
+  const x = i => L + i*(W-L-R)/11;
+  const vals = MONTHS.map(mm=>FIT[r+'|'+h+'|'+mm].ai);
+  const lo=20, hi=90;
+  const y = v => T + (1-(v-lo)/(hi-lo))*(H-T-B);
+  let s2=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">`;
+  [40,50,60,70,80].forEach(v=>{
+    s2 += `<line x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}" stroke="#EEEFE7"/>`;
+    s2 += `<text x="${L-6}" y="${y(v)+3}" text-anchor="end" font-size="9.5" fill="#98a094">${v}</text>`;
+  });
+  s2 += `<line x1="${L}" y1="${y(48)}" x2="${W-R}" y2="${y(48)}" stroke="#C8A165" stroke-dasharray="4 3"/>`;
+  s2 += `<path d="${path(vals.map((v,i)=>[x(i),y(v)]))}" fill="none" stroke="#2F6B4F" stroke-width="2.4"/>`;
+  vals.forEach((v,i)=>{
+    s2 += `<circle cx="${x(i)}" cy="${y(v)}" r="${i===state.month-1?4.4:2.8}" fill="${i===state.month-1?'#2F6B4F':'#fff'}" stroke="#2F6B4F" stroke-width="1.8"/>`;
+  });
+  MONTHS.forEach((mm,i)=> s2 += `<text x="${x(i)}" y="${H-6}" text-anchor="middle" font-size="9.5" fill="#98a094">${mm}</text>`);
+  s2 += `</svg>`;
+  el('#detailChart').innerHTML = s2;
+  el('#detailSub').textContent = `${h}（${hb.latin}）· ${REG[r].short} · 虚线上方为有利区间 · 模型推算`;
+}
+
+/* ---------------- 窗口 ---------------- */
+function drawWin(){
+  const h = state.herb, r = state.winRegion;
+  const hb = HERB[h];
+  const ais = MONTHS.map(m=>FIT[r+'|'+h+'|'+m].ai);
+  const ben = MONTHS.map(m=>FIT[r+'|'+h+'|'+m].ben);
+  const sow = MONTHS.filter(m=>ais[m-1]>=56 && m>=3 && m<=6);
+  const plantWin = sow.length?sow:[ais.indexOf(Math.max(...ais))+1];
+  const bio = MONTHS.filter(m=> ben[m-1]>=0.3 && (m<=5 || m>=9));
+  const risk = MONTHS.filter(m=>ais[m-1]<48);
+  const ok = MONTHS.filter(m=>ais[m-1]>=56);
+  const rows = [
+    ['整地／施基肥', '播种前 2—3 周完成，配合有机物料', MONTHS.map(m=> ok.includes(m)||m===3||m===10 ? 2 : (m<=2||m===11?1:0))],
+    ['播种／移栽', '根系建成的关键期，宜在益菌上行段', MONTHS.map(m=> plantWin.includes(m)?2:(risk.includes(m)?0:1))],
+    ['防病／施菌', '错配窗口前 15 天介入，宁早勿晚', MONTHS.map(m=> risk.includes(m)?2:(bio.includes(m)?1:0))]
+  ];
+  const label = {0:['不宜','#EEF0E9','#98a094'],1:['可安排','#E3EFE5','#2F6B4F'],2:['最佳','#2F6B4F','#fff']};
+  let html = `<div style="font-size:12.5px;color:var(--muted);margin:10px 0 4px">
+      <b style="color:var(--ink)">${h}</b> · ${REG[r].short} · 播种 ${hb.sow} · 采收 ${hb.harvest}</div>`;
+  html += `<div style="display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-top:12px">` +
+    MONTHS.map(m=>`<div style="text-align:center;font-size:10.5px;color:#98a094">${m}月</div>`).join('') + `</div>`;
+  rows.forEach(([name, desc, marks])=>{
+    html += `<div style="margin-top:12px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <div style="font-size:13px;font-weight:700">${name}</div>
+        <div style="font-size:11.5px;color:var(--faint)">${desc}</div></div>
+      <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-top:5px">`;
+    marks.forEach(v=>{ const l=label[v];
+      html += `<div style="height:30px;border-radius:6px;background:${l[1]};color:${l[2]};display:flex;align-items:center;justify-content:center;font-size:10px">${l[0]}</div>`; });
+    html += `</div></div>`;
+  });
+  const bestM = MONTHS.reduce((a,b)=>ais[b-1]>ais[a-1]?b:a);
+  html += `<div class="grid3" style="margin-top:18px">
+      <div class="kpi"><div class="k">最佳播种窗口</div><div class="v">${plantWin.join('、')} 月</div>
+        <div class="n">平均 MAI ${fmt(plantWin.reduce((s,m)=>s+ais[m-1],0)/plantWin.length,1)}</div></div>
+      <div class="kpi"><div class="k">最佳施菌窗口</div><div class="v">${bio.length?bio.join('、')+' 月':'—'}</div>
+        <div class="n">益菌供给 ≥ 0.3 且在上行段</div></div>
+      <div class="kpi"><div class="k">高风险时段</div><div class="v" style="color:#B0472F">${risk.length?risk.join('、')+' 月':'—'}</div>
+        <div class="n">建议提前 15 天预防</div></div>
+    </div>
+    <div class="card" style="background:#FBFCF7;margin-top:14px;margin-bottom:0">
+      <div style="font-size:12.5px;line-height:1.9;color:#3a4438">
+      <b>本年度建议：</b>${h}在${REG[r].short}的最优窗口出现在 <b>${bestM} 月</b>（MAI ${Math.round(ais[bestM-1])}）。
+      ${risk.length?`${risk[0]}—${risk[risk.length-1]} 月病原压力偏高，防病措施应提前至窗口前 15 天，并减少灌溉频次。`:'未出现明显高风险窗口。'}
+      施菌建议安排在 <b>${bio.join('、')||plantWin.join('、')} 月</b>，以木霉＋芽孢杆菌复合菌剂为主。</div>
+      <div class="note" style="margin-top:8px">依据：连作下有益菌衰退（L03、L04）；镰刀菌与链霉菌此消彼长（L08）；菌剂回接可降低死苗率 40.1%（L06）。</div>
+    </div>`;
+  el('#winBody').innerHTML = html;
+}
+
+/* ---------------- 连作 ---------------- */
+function riskScore(years, region){
+  const f = region==='G2'?0.82:(region==='G3'?0.94:1.0);
+  return Math.min(97, 100*(1-Math.exp(-years/5.2))*f);
+}
+function drawRisk(){
+  const y = state.years, r = state.riskRegion;
+  const score = riskScore(y, r);
+  const col = score<40?'#5C8F6E':score<60?'#C8A165':score<80?'#C2703F':'#B0472F';
+  const lvl = score<40?'低风险':score<60?'中等风险':score<80?'高风险':'极高风险';
+  const W=360,H=215,cx=180,cy=172,rad=118;
+  function arcPts(frac){
+    const n=90, pts=[];
+    for(let i=0;i<=Math.max(1,Math.round(n*frac));i++){
+      const th = Math.PI - Math.PI*(i/n);
+      pts.push([cx+rad*Math.cos(th), cy-rad*Math.sin(th)]);
+    }
+    return path(pts);
+  }
+  let s=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">`;
+  s+=`<path d="${arcPts(1)}" fill="none" stroke="#EEF0E9" stroke-width="20" stroke-linecap="round"/>`;
+  if(score>1) s+=`<path d="${arcPts(score/100)}" fill="none" stroke="${col}" stroke-width="20" stroke-linecap="round"/>`;
+  s+=`<text x="${cx}" y="${cy-30}" text-anchor="middle" font-size="42" font-weight="700" fill="${col}">${Math.round(score)}</text>`;
+  s+=`<text x="${cx}" y="${cy-8}" text-anchor="middle" font-size="12" fill="#98a094">风险评分 / 100 · 模型</text>`;
+  s+=`<text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="14" font-weight="700" fill="${col}">${lvl}</text>`;
+  s+=`</svg>`;
+  el('#riskGauge').innerHTML = s;
+
+  const W2=430,H2=210,L=38,R=14,T=14,B=28;
+  const x = yy => L + (yy-1)*(W2-L-R)/14;
+  const yv = v => T + (1-v/100)*(H2-T-B);
+  let s2=`<svg viewBox="0 0 ${W2} ${H2}" style="width:100%;height:auto">`;
+  [0,25,50,75,100].forEach(v=>{
+    s2+=`<line x1="${L}" y1="${yv(v)}" x2="${W2-R}" y2="${yv(v)}" stroke="#EEEFE7"/>`;
+    s2+=`<text x="${L-6}" y="${yv(v)+3}" text-anchor="end" font-size="9.5" fill="#98a094">${v}</text>`;
+  });
+  const pts=[]; for(let i=1;i<=15;i++) pts.push([x(i), yv(riskScore(i,r))]);
+  s2+=`<path d="${path(pts)}" fill="none" stroke="#B0472F" stroke-width="2.2"/>`;
+  s2+=`<circle cx="${x(y)}" cy="${yv(score)}" r="4.5" fill="#fff" stroke="#B0472F" stroke-width="2.4"/>`;
+  s2+=`<line x1="${x(y)}" y1="${T}" x2="${x(y)}" y2="${H2-B}" stroke="#B0472F" stroke-dasharray="3 3" opacity=".5"/>`;
+  for(let i=1;i<=15;i+=2) s2+=`<text x="${x(i)}" y="${H2-8}" text-anchor="middle" font-size="9.5" fill="#98a094">${i}</text>`;
+  s2+=`</svg>`;
+  el('#riskCurve').innerHTML = `<div style="font-size:11.5px;color:var(--muted);margin-bottom:2px">连作年限 → 风险评分（模型）</div>`+s2;
+
+  const rot = y<=3?['可继续种植，注意轮作规划','建议 3 年内安排一次豆科绿肥轮作']:
+              y<=6?['建议本季改种非寄主作物','推荐柴胡、黄芩或绿肥（毛苕子）轮作 1—2 季']:
+              y<=10?['强制轮作，暂缓根类药材','建议休耕或种植禾本科 2 年，配合深翻与有机物料']:
+              ['地块已严重退化，建议休耕修复','连续 2 年绿肥＋生物有机肥，修复后再评估'];
+  el('#riskAdvice').innerHTML = `
+    <div class="grid2" style="margin-top:6px">
+      <div class="kpi"><div class="k">轮作建议</div><div class="v" style="font-size:15px">${rot[1]}</div><div class="n">${rot[0]}</div></div>
+      <div class="kpi"><div class="k">病原累积</div><div class="v" style="font-size:15px">镰刀菌 +${Math.round(score*0.9)}%</div><div class="n">相对同区域轮作地块的模拟增幅</div></div>
+    </div>`;
+}
+
+/* ---------------- 文献 ---------------- */
+function drawRefs(){
+  el('#refList').innerHTML = DATA.refs.map(r=>`
+    <div class="ref">
+      <div class="h"><span class="tag blue">${r.id}</span><b>${r.en || r.cn}</b>${r.note?` <span class="tag sand">${r.note}</span>`:""}</div>
+      <div class="meta">${r.journal} · ${r.year}${r.pmid?' · PMID '+r.pmid:''}${r.doi?' · DOI '+r.doi:''}</div>
+      <div class="f">${r.finding}</div>
+      <div class="u">用于：${r.use}</div>
+    </div>`).join('');
+}
+
+
+/* ---------------- 群落结构堆叠 ---------------- */
+function drawStack(){
+  const r = state.region, hb = HERBS_MAIN[r];
+  const ben = MONTHS.map(m=>FIT[r+'|'+hb+'|'+m].ben);
+  const dis = MONTHS.map(m=>FIT[r+'|'+hb+'|'+m].dis);
+  const W=980,H=250,L=48,R=16,T=14,B=32;
+  const x = i => L + i*(W-L-R)/11;
+  const y = v => T + (1-v)*(H-T-B);
+  const pd = dis.map((d,i)=> d/Math.max(0.001, d+ben[i]));
+  let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">`;
+  [0,0.5,1].forEach(v=>{
+    s += `<line x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}" stroke="#EEEFE7"/>`;
+    s += `<text x="${L-10}" y="${y(v)+4}" text-anchor="end" font-size="10.5" fill="#98a094">${Math.round(v*100)}%</text>`;
+  });
+  // 病原带（下）
+  let p1 = pd.map((v,i)=>[x(i), y(v)]);
+  let p0 = pd.map((v,i)=>[x(i), y(0)]).reverse();
+  s += `<polygon points="${p1.concat(p0).map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ')}" fill="#E8AE96"/>`;
+  // 有益带（上）
+  let q1 = pd.map((v,i)=>[x(i), y(1)]);
+  let q0 = pd.map((v,i)=>[x(i), y(v)]).reverse();
+  s += `<polygon points="${q1.concat(q0).map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ')}" fill="#BFDCC9"/>`;
+  s += `<path d="${path(pd.map((v,i)=>[x(i),y(v)]))}" fill="none" stroke="#B0472F" stroke-width="2"/>`;
+  MONTHS.forEach((m,i)=>{
+    s += `<text x="${x(i)}" y="${H-8}" text-anchor="middle" font-size="10.5" fill="#6b7568">${m}月</text>`;
+  });
+  s += `<text x="${W-R}" y="${T+14}" text-anchor="end" font-size="11" fill="#2F6B4F">益菌供给</text>`;
+  s += `<text x="${W-R}" y="${H-B-8}" text-anchor="end" font-size="11" fill="#B0472F">病原胁迫</text>`;
+  s += `</svg>`;
+  el('#stackChart').innerHTML = s;
+}
+
+/* ---------------- 三产区对比 ---------------- */
+function drawRegionCards(){
+  el('#regionCards').innerHTML = DATA.regions.map(reg=>{
+    const hb = HERBS_MAIN[reg.id];
+    const ben = MONTHS.map(m=>FIT[reg.id+'|'+hb+'|'+m].ben);
+    const dis = MONTHS.map(m=>FIT[reg.id+'|'+hb+'|'+m].dis);
+    const W=300,H=150,L=8,R=8,T=10,B=20;
+    const x = i => L + i*(W-L-R)/11;
+    const y = v => T + (1-v)*(H-T-B);
+    const win = MONTHS.filter(m=>dis[m-1]>ben[m-1]);
+    let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">`;
+    [0,0.5,1].forEach(v=> s += `<line x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}" stroke="#EEEFE7"/>`);
+    if(win.length){
+      const top = win.map(m=>[x(m-1), y(ben[m-1])]);
+      const bot = win.slice().reverse().map(m=>[x(m-1), y(dis[m-1])]);
+      s += `<polygon points="${top.concat(bot).map(q=>q[0]+','+q[1]).join(' ')}" fill="#F3E2D6"/>`;
+    }
+    s += `<path d="${path(ben.map((v,i)=>[x(i),y(v)]))}" fill="none" stroke="#2F6B4F" stroke-width="2"/>`;
+    s += `<path d="${path(dis.map((v,i)=>[x(i),y(v)]))}" fill="none" stroke="#B0472F" stroke-width="2"/>`;
+    s += `<text x="${L}" y="${H-4}" font-size="9" fill="#98a094">1月</text>`;
+    s += `<text x="${W-R}" y="${H-4}" text-anchor="end" font-size="9" fill="#98a094">12月</text>`;
+    s += `</svg>`;
+    const pk = MONTHS.reduce((a,b)=>dis[b-1]>dis[a-1]?b:a);
+    const gap = win.length ? `${win[0]}—${win[win.length-1]} 月` : '无';
+    return `<div class="kpi">
+      <div class="k">${reg.short} · ${hb}</div>
+      ${s}
+      <div class="n" style="margin-top:4px">病原峰值 ${pk} 月　·　错配窗口 ${gap}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------------- 全药材总览 ---------------- */
+function drawOvGrid(){
+  const r = state.ovRegion;
+  const herbs = DATA.herbs.map(h=>h.name);
+  let html = `<div class="mx" style="grid-template-columns:96px repeat(12,1fr)">`;
+  html += `<div></div>`;
+  MONTHS.forEach(m=>{ html += `<div class="hrow" data-m="${m}" style="cursor:pointer">${m}</div>`; });
+  herbs.forEach(h=>{
+    const rg = HERB_REGION[h];
+    html += `<div class="lrow" data-h="${h}" style="cursor:pointer"><b>${h}</b><span>${REG[rg].short}</span></div>`;
+    MONTHS.forEach(m=>{
+      const f = FIT[rg+'|'+h+'|'+m];
+      const lv = levelOf(f.ai);
+      html += `<div class="mc" data-h="${h}" data-m="${m}" style="background:${lv.c}" title="${h} · ${m}月 · ${lv.name} · MAI ${f.ai}">${Math.round(f.ai)}</div>`;
+    });
+  });
+  html += `</div>`;
+  el('#ovGrid').innerHTML = html;
+  el('#ovGrid').querySelectorAll('.hrow').forEach(n=>{
+    n.onclick = ()=>{ state.month = +n.dataset.m; drawOvRank(); drawOvMonths(); };
+  });
+  el('#ovGrid').querySelectorAll('.lrow').forEach(n=>{
+    n.onclick = ()=>{
+      state.herb = n.dataset.h;
+      document.querySelector('.tab[data-tab="cal"]').click();
+    };
+  });
+  el('#ovGrid').querySelectorAll('.mc').forEach(n=>{
+    n.onclick = ()=>{
+      state.herb = n.dataset.h; state.month = +n.dataset.m;
+      document.querySelector('.tab[data-tab="cal"]').click();
+    };
+  });
+}
+
+function drawOvRank(){
+  const m = state.month;
+  const items = DATA.herbs.map(h=>{
+    const rg = HERB_REGION[h.name];
+    const f = FIT[rg+'|'+h.name+'|'+m];
+    return {h:h.name, ai:f.ai, rg};
+  }).sort((a,b)=>b.ai-a.ai);
+  el('#ovRankSub').textContent = `${m} 月 · 按 MAI 排序（绿色为有利，红色为风险）`;
+  el('#ovRank').innerHTML = items.map((it,i)=>{
+    const lv = levelOf(it.ai);
+    return `<div class="rank">
+      <span class="no">${i+1}</span>
+      <span class="nm"><b>${it.h}</b> <span style="color:#98a094;font-size:11px">${REG[it.rg].short}</span></span>
+      <span style="width:120px;height:6px;background:#EEF0E9;border-radius:99px;overflow:hidden">
+        <i style="display:block;height:100%;width:${Math.min(100,(it.ai-30)/50*100).toFixed(0)}%;background:${lv.c}"></i></span>
+      <span class="vv" style="color:${lv.c};width:34px;text-align:right">${Math.round(it.ai)}</span>
+    </div>`;
+  }).join('');
+}
+
+function drawOvMonths(){
+  const rows = DATA.herbs.map(h=>{
+    const rg = HERB_REGION[h.name];
+    const bad = MONTHS.filter(m=>FIT[rg+'|'+h.name+'|'+m].ai < 48);
+    return {h:h.name, n:bad.length, months:bad};
+  }).sort((a,b)=>b.n-a.n);
+  const mx = Math.max(...rows.map(r=>r.n), 1);
+  el('#ovMonths').innerHTML = rows.map((r,i)=>{
+    const col = r.n>=5 ? '#B0472F' : r.n>=4 ? '#C2703F' : r.n>=3 ? '#C8A165' : '#5C8F6E';
+    return `<div class="rank">
+      <span class="no">${i+1}</span>
+      <span class="nm"><b>${r.h}</b> <span style="color:#98a094;font-size:11px">${r.months.join('、')||'—'} 月</span></span>
+      <span style="width:90px;height:6px;background:#EEF0E9;border-radius:99px;overflow:hidden">
+        <i style="display:block;height:100%;width:${(r.n/mx*100).toFixed(0)}%;background:${col}"></i></span>
+      <span class="vv" style="color:${col};width:34px;text-align:right">${r.n}</span>
+    </div>`;
+  }).join('') +
+  `<div class="note" style="margin-top:8px">${
+    rows.filter(r=>r.n>=4).map(r=>r.h).join('、')
+  } 全年有 4 个月以上处于抑制区，是需要重点排布农事的品种；${
+    rows.filter(r=>r.n<=2).map(r=>r.h).join('、') || '无'
+  } 的风险窗口最短。</div>`;
+}
+
+
+/* ---------------- 证据覆盖 ---------------- */
+function drawRefExtras(){
+  // 统计
+  let nA=0,nB=0,nC=0,none=0;
+  DATA.herbs.forEach(h=>{
+    MATRIX_MB.forEach(mid=>{
+      const e = DATA.evid[h.name][mid];
+      if(!e) return;
+      if(e.r.length===0){ none++; return; }
+      if(e.g==='A') nA++; else if(e.g==='B') nB++; else nC++;
+    });
+  });
+  el('#refStats').innerHTML = `
+    <div class="kpi"><div class="k">文献总量</div><div class="v">${DATA.refs.length} 篇</div><div class="n">均含 PMID 或 DOI</div></div>
+    <div class="kpi"><div class="k">A 级“菌—药”关系</div><div class="v">${nA} 组</div><div class="n">该药材直接验证</div></div>
+    <div class="kpi"><div class="k">B 级关系</div><div class="v">${nB} 组</div><div class="n">近缘作物或机制证据</div></div>
+    <div class="kpi"><div class="k">尚无文献的格子</div><div class="v" style="color:#B0472F">${none} 个</div><div class="n">执行期需补齐</div></div>`;
+
+  // 覆盖地图
+  const herbs = DATA.herbs.map(h=>h.name);
+  let html = `<div class="mx" style="grid-template-columns:96px repeat(${herbs.length},1fr)">`;
+  html += `<div></div>`;
+  herbs.forEach(h=> html += `<div class="hrow">${h}</div>`);
+  MATRIX_MB.forEach(mid=>{
+    html += `<div class="lrow"><b>${MB[mid].cn}</b><span>${MB[mid].id}</span></div>`;
+    herbs.forEach(h=>{
+      const e = DATA.evid[h][mid];
+      if(!e || e.r.length===0){
+        html += `<div class="mc" style="background:#fff;border:1px dashed #C9D0C6;color:#B9C2B6">—</div>`;
+      } else {
+        const bg = e.g==='A' ? '#2F6B4F' : e.g==='B' ? '#C8A165' : '#9AA3A0';
+        html += `<div class="mc" style="background:${bg}" title="${h} × ${MB[mid].cn}｜${e.n}">${e.g}</div>`;
+      }
+    });
+  });
+  html += `</div>`;
+  el('#evidMap').innerHTML = html;
+
+  // 年份分布
+  const yrs = {};
+  DATA.refs.forEach(r=>{ yrs[r.year] = (yrs[r.year]||0)+1; });
+  const ks = Object.keys(yrs).map(Number).sort((a,b)=>a-b);
+  const W=760,H=170,L=30,R=14,T=16,B=30;
+  const bw=(W-L-R)/ks.length;
+  const mx=Math.max(...ks.map(k=>yrs[k]));
+  let s=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">`;
+  ks.forEach((k,i)=>{
+    const h=yrs[k]/mx*(H-T-B);
+    s+=`<rect x="${L+i*bw+8}" y="${H-B-h}" width="${bw-16}" height="${h}" rx="3" fill="#5C8F6E"/>`;
+    s+=`<text x="${L+i*bw+bw/2}" y="${H-B-h-5}" text-anchor="middle" font-size="10.5" fill="#3a4438">${yrs[k]}</text>`;
+    s+=`<text x="${L+i*bw+bw/2}" y="${H-10}" text-anchor="middle" font-size="9.5" fill="#98a094">${k}</text>`;
+  });
+  s+=`</svg>`;
+  el('#yearChart').innerHTML = s +
+    `<div class="note" style="margin-top:4px">近三年文献占多数，说明该方向正在升温；早期经典（2016—2019）主要用于机制溯源。</div>`;
+}
+
+function drawOverview(){
+  el('#ovRegionSeg').innerHTML = DATA.regions.map(r=>
+    `<button data-r="${r.id}" class="${r.id===state.ovRegion?'on':''}">${r.short}</button>`).join('');
+  el('#ovRegionSeg').querySelectorAll('button').forEach(b=>{
+    b.onclick = ()=>{ state.ovRegion=b.dataset.r; drawOverview(); };
+  });
+  drawOvGrid(); drawOvRank(); drawOvMonths();
+}
+
+
+/* ---------------- 控件 ---------------- */
+function buildControls(){
+  el('#regionSeg').innerHTML = DATA.regions.map(r=>
+    `<button data-r="${r.id}" class="${r.id===state.region?'on':''}">${r.short}</button>`).join('');
+  el('#regionSeg').querySelectorAll('button').forEach(b=>{
+    b.onclick = ()=>{ state.region=b.dataset.r; buildControls(); drawMain(); drawKpis(); drawMinis(); drawStack(); };
+  });
+  el('#herbChips').innerHTML = DATA.herbs.map(h=>
+    `<button class="chip ${h.name===state.herb?'on':''}" data-h="${h.name}">${h.name}<span class="rg">${REG[HERB_REGION[h.name]].short}</span></button>`
+  ).join('');
+  el('#herbChips').querySelectorAll('.chip').forEach(b=>{
+    b.onclick = ()=>{ state.herb=b.dataset.h; state.month=5; buildControls(); drawCal(); };
+  });
+  el('#winHerbs').innerHTML = DATA.herbs.map(h=>
+    `<button class="chip ${h.name===state.herb?'on':''}" data-h="${h.name}">${h.name}</button>`).join('');
+  el('#winHerbs').querySelectorAll('.chip').forEach(b=>{
+    b.onclick = ()=>{ state.herb=b.dataset.h; buildControls(); drawWin(); };
+  });
+  el('#winRegion').innerHTML = DATA.regions.map(r=>
+    `<button data-r="${r.id}" class="${r.id===state.winRegion?'on':''}">${r.short}</button>`).join('');
+  el('#winRegion').querySelectorAll('button').forEach(b=>{
+    b.onclick = ()=>{ state.winRegion=b.dataset.r; buildControls(); drawWin(); };
+  });
+  el('#riskRegion').innerHTML = DATA.regions.map(r=>
+    `<button data-r="${r.id}" class="${r.id===state.riskRegion?'on':''}">${r.short}</button>`).join('');
+  el('#riskRegion').querySelectorAll('button').forEach(b=>{
+    b.onclick = ()=>{ state.riskRegion=b.dataset.r; buildControls(); drawRisk(); };
+  });
+}
+
+document.querySelectorAll('.tab').forEach(t=>{
+  t.onclick = ()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+    state.tab = t.dataset.tab;
+    document.querySelectorAll('main > section').forEach(s=>s.classList.add('hidden'));
+    el('#tab-'+state.tab).classList.remove('hidden');
+    if(state.tab==='matrix'){ drawSeasonSeg(); drawMatrix(); drawRank(); }
+    if(state.tab==='cal'){ drawCal(); }
+    if(state.tab==='win'){ drawWin(); }
+    if(state.tab==='risk'){ drawRisk(); }
+    if(state.tab==='refs'){ drawRefs(); drawRefExtras(); }
+    if(state.tab==='overview'){ drawOverview(); }
+  };
+});
+el('#years').oninput = (e)=>{ state.years = +e.target.value; el('#yearsVal').textContent = state.years+' 年'; drawRisk(); };
+
+buildControls();
+drawMain(); drawKpis(); drawMinis();
+drawSeasonSeg(); drawMatrix(); drawRank();
+drawCal(); drawWin(); drawRisk(); drawRefs(); drawRefExtras();
+drawStack(); drawRegionCards(); drawOverview();
+
+if (location.hash.length > 1) {
+  const target = document.querySelector('.tab[data-tab="' + location.hash.slice(1) + '"]');
+  if (target) target.click();
+}
+</script>
+</body>
+</html>
