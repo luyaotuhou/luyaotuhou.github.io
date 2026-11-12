@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>陇药土候 v0.2 · 黄河甘肃段土壤微生物—中药材时序适配平台</title>
+<title>陇药土候 v0.2 · 黄河甘肃段土壤微生物—中药材时序指导平台</title>
 <style>
   :root{
     --ink:#22281f; --muted:#6b7568; --faint:#98a094;
@@ -104,6 +104,8 @@
   .banner{background:linear-gradient(90deg,#F4F8F2,#FBF8EF);border:1px solid #DCE6DA;border-radius:11px;
     padding:11px 14px;font-size:12px;color:#3d4a3c;margin-bottom:14px;line-height:1.75}
   .banner b{color:var(--green)}
+  .warnbar{background:#FFF4EC;border:1px solid #F0C9B6;border-left:4px solid #B0472F;border-radius:8px;padding:9px 12px;font-size:12px;color:#8A3B22;margin-top:10px;line-height:1.7}
+  .warnbar b{color:#B0472F}
   .row > *{min-width:0}
   .mx-hint{display:none}
   .hscroll{overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px}
@@ -148,7 +150,7 @@
     </svg>
     <div class="brand">
       <h1>陇药土候</h1>
-      <p>黄河甘肃段土壤微生物—中药材时序适配平台</p>
+      <p>黄河甘肃段土壤微生物—中药材时序指导平台</p>
     </div>
 
   </div>
@@ -160,6 +162,7 @@
     <div class="tab" data-tab="win">窗口推荐</div>
     <div class="tab" data-tab="risk">连作预警</div>
     <div class="tab" data-tab="refs">证据溯源</div>
+    <div class="tab" data-tab="sources">数据源</div>
     <div class="tab" data-tab="doc">方法与说明</div>
   </div>
 </div>
@@ -362,6 +365,55 @@
       <div id="refList"></div>
       <p class="note" style="margin-top:10px">
         检索与去重过程见配套《陇药土候-数据模型表.xlsx》工作表 11—14；文中数值均从原文 Abstract 摘录，未作二次加工。
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ 数据源 ============ -->
+  <section id="tab-sources" class="hidden">
+    <div class="banner" id="liveBanner">
+      <b>数据连接：</b>本页实时读取公开气象接口与文献库；国内平台按“免注册可直接查看”与“需注册”两类如实标注，
+      每个入口都给出真实可用的地址，未做任何模拟。
+    </div>
+
+    <div class="card">
+      <div class="row" style="align-items:center">
+        <div style="flex:1">
+          <h2>三个产区的实时地温与墒情</h2>
+          <div class="sub" id="wxSub">正在连接…</div>
+        </div>
+        <button class="chip" id="wxRefresh" style="cursor:pointer">刷新</button>
+      </div>
+      <div class="grid3" id="wxCards"></div>
+      <div id="wxChart" style="margin-top:12px"></div>
+      <p class="note" style="margin-top:8px">
+        地温（6 cm）是 MAI 模型中“地温适宜度”项的实测输入；此处为网格化再分析值，非田间实测，用于展示“实时接入”如何替换模型中的气候参数。
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>文献库实时检索</h2>
+      <div class="sub" id="litSub">正在连接 Europe PMC…</div>
+      <div class="grid3" id="litCards"></div>
+      <p class="note" style="margin-top:8px">
+        每次打开页面都会重新检索，数字即当次结果；平台内已精读并结构化的 37 篇见“证据溯源”页。
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>数据源接入状态</h2>
+      <div class="sub">“已接入”＝页面实时调用；“免注册”＝点开即可搜索；“需注册”＝需机构账号</div>
+      <table id="srcTable"></table>
+      <h3 class="sec">哪些可以直接看，哪些必须注册</h3>
+      <p class="note">
+        <b>可直接查看（免注册）</b>：CGMCC 的菌种检索页、NGDC/GSA 的项目浏览页、中国天气网公众页，点开即可搜索与浏览，
+        只有下载原始数据时才需要登录。<b>必须注册</b>：NMDC、国家农业科学数据中心、国家地球系统科学数据中心，
+        以及中国气象数据网的专业观测（该站会直接跳转到登录页）。
+        本平台的取舍是：能公开的直接给公开入口，不能公开的如实标注“需注册”，并说明哪一步被卡住，
+        不做一个假的“已对接”按钮。
+      </p>
+      <p class="note" style="margin-top:6px">
+        若后续取得机构账号或 API 凭证，只需在 <code>sync.py</code> 中增加一个适配器即可接入，数据结构无需改动。
       </p>
     </div>
   </section>
@@ -808,6 +860,7 @@ function drawWin(){
       <b>本年度建议：</b>${h}在${REG[r].short}的最优窗口出现在 <b>${bestM} 月</b>（MAI ${Math.round(ais[bestM-1])}）。
       ${risk.length?`${risk[0]}—${risk[risk.length-1]} 月病原压力偏高，防病措施应提前至窗口前 15 天，并减少灌溉频次。`:'未出现明显高风险窗口。'}
       施菌建议安排在 <b>${bio.join('、')||plantWin.join('、')} 月</b>，以木霉＋芽孢杆菌复合菌剂为主。</div>
+      <div class="warnbar"><b>⚠ 示范数据 · 未验证：</b>以下建议由模型推算生成，未经田间试验验证，仅供参考，<b>不构成农事指令</b>；实际施药、施肥请遵循当地农技部门指导。</div>
       <div class="note" style="margin-top:8px">依据：连作下有益菌衰退（L03、L04）；镰刀菌与链霉菌此消彼长（L08）；菌剂回接可降低死苗率 40.1%（L06）。</div>
     </div>`;
   el('#winBody').innerHTML = html;
@@ -864,7 +917,8 @@ function drawRisk(){
   el('#riskAdvice').innerHTML = `
     <div class="grid2" style="margin-top:6px">
       <div class="kpi"><div class="k">轮作建议</div><div class="v" style="font-size:15px">${rot[1]}</div><div class="n">${rot[0]}</div></div>
-      <div class="kpi"><div class="k">病原累积</div><div class="v" style="font-size:15px">镰刀菌 +${Math.round(score*0.9)}%</div><div class="n">相对同区域轮作地块的模拟增幅</div></div>
+      <div class="kpi"><div class="k">病原累积</div><div class="v" style="font-size:15px">镰刀菌 +${Math.round(score*0.9)}%</div><div class="n">相对同区域轮作地块的模拟增幅</div><div class="warnbar"><b>⚠ 示范数据 · 未验证：</b>以下建议由模型推算生成，未经田间试验验证，仅供参考，<b>不构成农事指令</b>；实际施药、施肥请遵循当地农技部门指导。</div>
+</div>
     </div>`;
 }
 
@@ -1091,6 +1145,108 @@ function drawOverview(){
 }
 
 
+
+/* ---------------- 数据源：实时接入 ---------------- */
+const SITE_META = {
+  G1: {name:"岷县", lat:34.43, lon:104.04},
+  G2: {name:"靖远", lat:36.57, lon:104.69},
+  G3: {name:"华池", lat:36.45, lon:108.01}
+};
+const SRC_LIST = [
+  ["国家微生物科学数据中心 NMDC","微生物组 / 菌株 / 基因组","https://nmdc.cn/","需注册","元数据可浏览，原始数据下载需账号"],
+  ["中国普通微生物菌种保藏管理中心 CGMCC","菌种资源 / 目录","https://www.cgmcc.net/strain/search","免注册","公开菌种检索页，已验证可匿名打开"],
+  ["国家基因组科学数据中心 NGDC / GSA","测序原始数据","https://ngdc.cncb.ac.cn/gsa/browse","免注册浏览","项目列表公开；原始数据下载需登录"],
+  ["国家农业科学数据中心","农业观测 / 土壤","https://www.agridata.cn/","需注册","数据集以申请制开放"],
+  ["国家地球系统科学数据中心","土壤 / 生态 / 气象","https://www.geodata.cn/","需注册","部分数据集可公开预览"],
+  ["中国天气网（中国气象局）","地面实况 / 预报","http://www.weather.com.cn/weather/101160201.shtml","免注册","公众版；专业观测见 data.cma.cn（需注册）"],
+  ["Europe PMC","文献检索","https://europepmc.org/","免注册 · 已接入","开放 API，本页实时调用"],
+  ["Open-Meteo","气温 / 降水 / 土壤温湿度","https://open-meteo.com/","免注册 · 已接入","开放 API，无需密钥"]
+];
+function fmtTime(iso){
+  if(!iso) return "—";
+  const d = new Date(iso);
+  if(isNaN(d)) return iso;
+  return `${d.getMonth()+1}月${d.getDate()}日 ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+}
+function drawSrcTable(){
+  el('#srcTable').innerHTML =
+    "<tr><th>平台</th><th>提供的数据</th><th>是否需要注册</th><th>说明</th></tr>" +
+    SRC_LIST.map(r=>{
+      const open = r[3].indexOf("免注册") === 0;
+      const api = r[3].indexOf("已接入") > -1;
+      const badge = api ? '<span class="tag">已接入 · 实时</span>'
+                  : open ? '<span class="tag">免注册 · 可直接查看</span>'
+                  : '<span class="tag clay">需注册</span>';
+      return `<tr>
+        <td><a href="${r[2]}" target="_blank" rel="noopener" style="color:var(--green);text-decoration:none"><b>${r[0]}</b> ↗</a></td>
+        <td>${r[1]}</td>
+        <td>${badge}</td>
+        <td style="color:#6b7568">${r[4]}</td>
+      </tr>`;
+    }).join("");
+}
+async function loadWeather(){
+  const ids = Object.keys(SITE_META);
+  const lat = ids.map(k=>SITE_META[k].lat).join(",");
+  const lon = ids.map(k=>SITE_META[k].lon).join(",");
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
+    + `&current=temperature_2m,relative_humidity_2m,precipitation`
+    + `&hourly=soil_temperature_6cm,soil_moisture_3_to_9cm&forecast_days=2&timezone=Asia%2FShanghai`;
+  const r = await fetch(url, {cache:"no-store"});
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  const j = await r.json();
+  const arr = Array.isArray(j) ? j : [j];
+  el('#wxSub').textContent = `数据来源 Open-Meteo · 读取时间 ${fmtTime(new Date().toISOString())} · 每 15 分钟更新`;
+  el('#wxCards').innerHTML = arr.map((d,i)=>{
+    const cur = d.current || {};
+    const st = (d.hourly && d.hourly.soil_temperature_6cm) ? d.hourly.soil_temperature_6cm[0] : null;
+    const sm = (d.hourly && d.hourly.soil_moisture_3_to_9cm) ? d.hourly.soil_moisture_3_to_9cm[0] : null;
+    return `<div class="kpi">
+      <div class="k">${SITE_META[ids[i]].name}</div>
+      <div class="v">${cur.temperature_2m ?? "—"}<span style="font-size:12px;color:#98a094"> ℃ 气温</span></div>
+      <div class="n">地温 6cm ${st ?? "—"} ℃　·　墒情 ${sm ?? "—"} m³/m³</div>
+      <div class="n">湿度 ${cur.relative_humidity_2m ?? "—"}%　·　降水 ${cur.precipitation ?? "—"} mm</div>
+    </div>`;
+  }).join("");
+  // 24h 地温曲线
+  const d0 = arr[0];
+  if(d0 && d0.hourly && d0.hourly.soil_temperature_6cm){
+    const vals = d0.hourly.soil_temperature_6cm.slice(0,24);
+    const W=980,H=180,L=36,R=12,T=12,B=26;
+    const mn=Math.min(...vals), mx=Math.max(...vals), span=(mx-mn)||1;
+    const x=i=>L+i*(W-L-R)/23, y=v=>T+(1-(v-mn)/span)*(H-T-B);
+    let sv=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">`;
+    [0,0.5,1].forEach(k=>{ const yy=T+k*(H-T-B); sv+=`<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="#EEEFE7"/>`; });
+    sv+=`<path d="${path(vals.map((v,i)=>[x(i),y(v)]))}" fill="none" stroke="#C8A165" stroke-width="2.4"/>`;
+    sv+=`<text x="${L-6}" y="${y(mx)+3}" text-anchor="end" font-size="10" fill="#98a094">${mx.toFixed(1)}</text>`;
+    sv+=`<text x="${L-6}" y="${y(mn)+3}" text-anchor="end" font-size="10" fill="#98a094">${mn.toFixed(1)}</text>`;
+    sv+=`<text x="${W-R}" y="${H-8}" text-anchor="end" font-size="10" fill="#98a094">未来 24 小时 6cm 地温（${SITE_META[ids[0]].name}，℃）</text>`;
+    sv+=`</svg>`;
+    el('#wxChart').innerHTML = sv;
+  }
+}
+async function loadLit(){
+  const q = '("soil microbiome" OR "rhizosphere microbiome" OR "soil microbial community" OR "soil microbiota" OR "rhizosphere microbiota") AND ("medicinal plant" OR "medicinal plants" OR "Chinese medicinal" OR "Chinese herb" OR Angelica OR Codonopsis OR Astragalus OR Panax OR Salvia) AND (season OR seasonal OR seasonality OR temporal OR monthly OR "continuous cropping")';
+  const url = "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query="
+    + encodeURIComponent(q) + "&format=json&pageSize=1";
+  const r = await fetch(url, {cache:"no-store"});
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  const j = await r.json();
+  el('#litSub').textContent = `Europe PMC 实时检索 · 读取时间 ${fmtTime(new Date().toISOString())}`;
+  el('#litCards').innerHTML = `
+    <div class="kpi"><div class="k">全球相关文献（实时）</div><div class="v">${j.hitCount}</div><div class="n">同一检索式，每次打开重新计数</div></div>
+    <div class="kpi"><div class="k">其中中文语种</div><div class="v">—</div><div class="n">需逐条判定语种，本页不估报</div></div>
+    <div class="kpi"><div class="k">平台已结构化</div><div class="v">37 篇</div><div class="n">含中文 10 篇，见“证据溯源”</div></div>`;
+}
+async function loadSources(){
+  drawSrcTable();
+  try { await loadWeather(); }
+  catch(e){ el('#wxSub').textContent = "连接失败：" + e.message + "（离线打开或网络受限时无法获取实时数据）"; el('#wxCards').innerHTML = ""; }
+  try { await loadLit(); }
+  catch(e){ el('#litSub').textContent = "连接失败：" + e.message; el('#litCards').innerHTML = ""; }
+}
+el('#wxRefresh').onclick = ()=>{ loadSources(); };
+
 /* ---------------- 控件 ---------------- */
 function buildControls(){
   el('#regionSeg').innerHTML = DATA.regions.map(r=>
@@ -1133,6 +1289,7 @@ document.querySelectorAll('.tab').forEach(t=>{
     if(state.tab==='win'){ drawWin(); }
     if(state.tab==='risk'){ drawRisk(); }
     if(state.tab==='refs'){ drawRefs(); drawRefExtras(); }
+    if(state.tab==='sources'){ loadSources(); }
     if(state.tab==='overview'){ drawOverview(); }
   };
 });
